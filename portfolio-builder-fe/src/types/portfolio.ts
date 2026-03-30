@@ -1,7 +1,7 @@
 export interface ISection {
   id: string;
   type: 'about' | 'skills' | 'projects' | 'contacts';
-  order: number; // Позиция блока в списке [cite: 81]
+  order: number; // Позиция блока в списке
   content: Record<string, any>; // Динамический контент блока
 }
 
@@ -10,6 +10,6 @@ export interface IPortfolio {
   userId: string;
   title: string;
   themeId: string; // Ссылка на выбранный шаблон 
-  status: 'draft' | 'published'; // Статус для реализации черновиков [cite: 37]
+  status: 'draft' | 'published'; // Статус для реализации черновиков
   sections: ISection[];
 }
