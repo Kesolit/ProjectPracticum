@@ -1,10 +1,7 @@
+import Editor from './pages/Editor/Editor'
+
 function App() {
-  return (
-    <div>
-      <h1>Редактор портфолио</h1>
-      <p>Твой код будет здесь</p>
-    </div>
-  )
+  return <Editor />
 }
 
 export default App
