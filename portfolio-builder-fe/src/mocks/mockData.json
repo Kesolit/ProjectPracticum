@@ -1,0 +1,43 @@
+{
+  "portfolio": {
+    "id": "port_001",
+    "userId": "user_123",
+    "status": "draft",
+    "theme": "default-light",
+    "sections": [
+      {
+        "id": "sec_1",
+        "type": "about",
+        "order": 0,
+        "content": {
+          "fullName": "Александра Морозова",
+          "role": "Frontend Developer",
+          "description": "Студентка 1 курса, учусь создавать классные веб-приложения.",
+          "contacts": "t.me/alexv1be"
+        }
+      },
+      {
+        "id": "sec_2",
+        "type": "skills",
+        "order": 1,
+        "content": {
+          "items": ["HTML", "CSS", "JavaScript", "Основы системного анализа"]
+        }
+      },
+      {
+        "id": "sec_3",
+        "type": "projects",
+        "order": 2,
+        "content": {
+          "items": [
+            {
+              "title": "Веб-конструктор портфолио",
+              "description": "Учебный проект для ИТ-специалистов. MVP версия.",
+              "link": "https://github.com/Kesolit/ProjectPracticum"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
