@@ -101,25 +101,6 @@
   overflow-y: visible;
 }
 
-/* Слайдер появляется только когда контент не помещается */
-.sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
 .sidebar h2 {
   font-size: 18px;
   font-weight: 600;
@@ -146,7 +127,12 @@
   border: 1px solid #e9ecef;
   border-radius: 8px;
   padding: 12px;
-  cursor: pointer;
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.block-card:active {
+  cursor: grabbing;
 }
 
 .block-card:hover {
@@ -186,6 +172,11 @@
   align-items: center;
   justify-content: center;
   background: #ffffff;
+  transition: background 0.2s ease;
+}
+
+.canvas.drag-over {
+  background: #f0fdf4;
 }
 
 .empty-state {
@@ -224,4 +215,143 @@
   font-size: 14px;
   color: #adb5bd;
   background: #fefefe;
+}
+
+/* ===== Контейнер для упавших блоков ===== */
+.dropped-blocks-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dropped-card-wrapper {
+  width: 100%;
+}
+
+.dropped-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.dropped-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dropped-color-square {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.dropped-text {
+  flex: 1;
+}
+
+.dropped-text strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.dropped-text p {
+  font-size: 14px;
+  color: #6c757d;
+  margin: 0;
+}
+
+/* ===== Кнопка удаления ===== */
+.remove-block-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: #6c757d;
+}
+
+.remove-block-btn:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+/* ===== Анимации ===== */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Визуальный блок при перетаскивании ===== */
+.drag-cursor-block {
+  position: fixed;
+  width: 180px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  z-index: 9999;
+  animation: dragFloat 0.1s ease-out;
+}
+
+.drag-cursor-square {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.drag-cursor-text strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+@keyframes dragFloat {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
