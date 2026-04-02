@@ -1,6 +1,6 @@
-  import logo from '../../assets/logo.svg'
-  import { useState, useRef, useEffect } from 'react'
-  import './Editor.css'
+import { useState, useEffect } from 'react'
+import './Editor.css'
+import logo from '../../assets/logo.svg'
 
   interface BlockType {
     name: string
@@ -104,7 +104,7 @@
       <div className="editor">
         <header className="editor-header">
           <div className="logo">
-            <img src="/logo.svg" alt="dev/folio" className="logo-icon" onError={(e) => e.currentTarget.style.display = 'none'} />
+            <img src={logo} alt="dev/folio" className="logo-icon" />
             <span className="logo-text">dev/folio</span>
           </div>
           <div className="header-actions">
