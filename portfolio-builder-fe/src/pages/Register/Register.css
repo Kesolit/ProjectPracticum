@@ -55,17 +55,25 @@
   overflow: hidden;
 }
 
+/* === ИЗМЕНЕНИЯ ДЛЯ ЛЕВОГО БЛОКА И ФОТО === */
+/* Левый блок теперь управляет пропорциями */
 .left-block {
-  flex: 1;
+  flex: 0 1 600px; /* Устанавливаем желаемую ширину */
+  aspect-ratio: 1 / 1.1; /* Высота автоматически станет в 1.27 раза больше ширины */
+  display: flex;
 }
 
-/* Контейнер формы */
+/* Правый блок оставляем фиксированным */
 .register-container {
-  width: 640px;
-  max-height: 760px;
-  display: flex;
-  flex-direction: column;
+  width: 640px; 
   flex-shrink: 0;
+}
+
+.registration-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Фото заполняет весь блок без искажений */
+  border-radius: 32px;
 }
 
 .register-container h1 {

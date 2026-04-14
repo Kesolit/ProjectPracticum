@@ -64,7 +64,15 @@ const Register = () => {
       </header>
 
       <div className="register-content">
-        <div className="left-block"></div>
+        
+        {/* === ДОБАВЛЕНА КАРТИНКА СЮДА === */}
+        <div className="left-block">
+          <img 
+            src="/images/регистрация.png" 
+            alt="Иллюстрация регистрации" 
+            className="registration-image" 
+          />
+        </div>
 
         <div className="register-container">
           <h1>Регистрация</h1>
