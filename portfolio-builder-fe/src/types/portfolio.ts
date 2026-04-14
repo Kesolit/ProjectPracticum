@@ -7,20 +7,46 @@ export type BlockType =
   | 'skills'      // Навыки (технологии)
   | 'experience'  // История опыта (карьера)
   | 'reviews'     // Отзывы (рекомендации)
-  | 'footer'      // Подвал (контакты)
+  | 'footer'      // Подвал (контакты);
 
 export interface ISection {
   id: string;
-  type: BlockType;           // ← теперь ровно 8 типов
-  order: number;             // Позиция блока в списке
+  type: BlockType;
+  order: number;                // Позиция блока в списке
   content: Record<string, any>; // Динамический контент блока
 }
 
+// Основная структура портфолио для редактора (Draft)
 export interface IPortfolio {
   id: string;
   userId: string;
   title: string;
-  themeId: string;           // Ссылка на выбранный шаблон 
-  status: 'draft' | 'published'; // Статус для реализации черновиков
+  slug?: string;                // Текстовый адрес (например, sasha-dev)
+  themeId: string;
+  status: 'draft' | 'published';
   sections: ISection[];
+  updatedAt: string;
+}
+
+// Структура для публичного просмотра (Read-Only)
+export interface IPublicPortfolio {
+  owner: {
+    fullName: string;
+    role: string;
+    contacts: {
+      email?: string;
+      telegram?: string;
+      github?: string;
+    };
+  };
+  config: {
+    themeId: string;
+    title: string;
+  };
+  // Массив секций, уже отсортированный бэкендом по полю order
+  sections: Array<{
+    type: BlockType;
+    content: Record<string, any>;
+  }>;
+  publishedAt: string;
 }
