@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import './Register.css'
+import { registerUser } from '../../api/api'
 
 // Импорты SVG-файлов
 import logo from '../../assets/logo.svg'
@@ -45,14 +46,34 @@ const Register = () => {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
-      alert('Пароли не совпадают')
-      return
+      alert('Пароли не совпадают');
+      return;
     }
-    console.log('Данные формы отправлены:', formData)
-  }
+
+    try {
+      // Отправляем данные на ваш бэкенд
+      const result = await registerUser({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+      });
+
+      console.log('Регистрация успешна:', result);
+      
+      // Перенаправляем на страницу входа или дашборд
+      window.location.href = '/login';
+      
+    } catch (error: any) {
+      console.error('Ошибка регистрации:', error);
+      alert(error.message || 'Не удалось зарегистрироваться');
+    }
+  };
 
   return (
     <div className="register-page">
