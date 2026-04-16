@@ -33,6 +33,12 @@ interface Review {
   position: string
 }
 
+interface FooterData {
+  email: string
+  telegram: string
+  github: string
+}
+
 // Компонент блока проектов
 const ProjectsBlock = () => {
   const [projects, setProjects] = useState<Project[]>([])
@@ -158,7 +164,7 @@ const SkillsBlock = () => {
   )
 }
 
-// Компонент блока истории опыта (таймлайн)
+// Компонент блока истории опыта
 const ExperienceBlock = () => {
   const [experiences, setExperiences] = useState<Experience[]>([])
 
@@ -314,6 +320,68 @@ const ReviewsBlock = () => {
   )
 }
 
+// Компонент блока подвал (footer)
+interface FooterData {
+  name: string;
+  github: string;
+  linkedin: string;
+  telegram: string;
+}
+
+const FooterBlock = () => {
+  const [footerData, setFooterData] = useState<FooterData>({
+    name: '',
+    github: '',
+    linkedin: '',
+    telegram: ''
+  });
+
+  const handleChange = (field: keyof FooterData, value: string) => {
+    setFooterData({ ...footerData, [field]: value });
+  };
+
+  return (
+    <div className="footer-minimal-container">
+      {/* Полоска */}
+      <div className="footer-divider"></div>
+      
+      {/* Строка копирайта с полем ввода имени */}
+      <div className="footer-copyright-row">
+        <span>© 2026</span>
+        <input 
+          className="footer-inline-input" 
+          placeholder="Ваше Имя" 
+          value={footerData.name}
+          onChange={(e) => handleChange('name', e.target.value)}
+        />
+        <span>Все права защищены.</span>
+      </div>
+
+      {/* Поля для ссылок ниже */}
+      <div className="footer-social-row">
+        <input 
+          className="footer-social-input" 
+          placeholder="GitHub URL" 
+          value={footerData.github}
+          onChange={(e) => handleChange('github', e.target.value)}
+        />
+        <input 
+          className="footer-social-input" 
+          placeholder="LinkedIn URL" 
+          value={footerData.linkedin}
+          onChange={(e) => handleChange('linkedin', e.target.value)}
+        />
+        <input 
+          className="footer-social-input" 
+          placeholder="Telegram URL" 
+          value={footerData.telegram}
+          onChange={(e) => handleChange('telegram', e.target.value)}
+        />
+      </div>
+    </div>
+  );
+};
+
 const Editor = () => {
   const [droppedBlocks, setDroppedBlocks] = useState<BlockType[]>([])
   const [draggedBlock, setDraggedBlock] = useState<BlockType | null>(null)
@@ -404,6 +472,10 @@ const Editor = () => {
 
       if (block.type === 'reviews') {
         return <ReviewsBlock />;
+      }
+
+      if (block.type === 'footer') {
+        return <FooterBlock />;
       }
 
       return (
@@ -559,8 +631,9 @@ const Editor = () => {
                       ${block.type === 'projects' ? 'projects-card-full' : ''}
                       ${block.type === 'skills' ? 'skills-card-full' : ''}
                       ${block.type === 'experience' ? 'experience-card-full' : ''}
-                      ${block.type === 'reviews' ? 'reviews-card-full' : ''}`}
-                    style={block.type !== 'nav' && block.type !== 'main' && block.type !== 'about' && block.type !== 'projects' && block.type !== 'skills' && block.type !== 'experience' && block.type !== 'reviews' ? { backgroundColor: block.bg } : {}}
+                      ${block.type === 'reviews' ? 'reviews-card-full' : ''}
+                      ${block.type === 'footer' ? 'footer-card-full' : ''}`}
+                    style={block.type !== 'nav' && block.type !== 'main' && block.type !== 'about' && block.type !== 'projects' && block.type !== 'skills' && block.type !== 'experience' && block.type !== 'reviews' && block.type !== 'footer' ? { backgroundColor: block.bg } : {}}
                   >
                     {renderBlockContent(block, true)}
                     <button className="remove-block-btn" onClick={() => removeBlock(block.type)} title="Удалить блок">✕</button>
