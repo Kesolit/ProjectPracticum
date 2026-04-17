@@ -1,5 +1,6 @@
 // api.ts
-const API_BASE_URL = 'http://localhost:5080';
+const API_BASE_URL = 'http://localhost:5080'; // C# сервер
+const NODE_API_URL = 'http://localhost:5000'; // Node.js сервер (добавили)
 
 // REGISTER
 export const registerUser = async (userData: {
@@ -40,6 +41,7 @@ export interface LoginResponse {
   id: string;
   email: string;
   fullName: string;
+  token?: string; // Добавили опционально, чтобы не ругался TS
 }
 
 export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
@@ -75,6 +77,39 @@ const authFetch = async (url: string, options: RequestInit = {}) => {
     ...options.headers,
   };
   return fetch(url, { ...options, headers });
+};
+
+// --- НОВЫЕ ФУНКЦИИ ДЛЯ ТВОИХ ЗАДАЧ ---
+
+/**
+ * ЗАДАЧА 1: Сохранение черновика на Node.js сервер
+ * @param draftData - объект с заголовком и массивом блоков
+ */
+export const savePortfolioDraft = async (draftData: { title: string; sections: any[] }) => {
+  const response = await authFetch(`${NODE_API_URL}/api/portfolio/draft`, {
+    method: 'POST', 
+    body: JSON.stringify(draftData),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Ошибка сохранения черновика');
+  }
+
+  return response.json();
+};
+
+/**
+ * ЗАДАЧА 2: Получение публичного портфолио по ID/Slug (без токена)
+ */
+export const getPublicPortfolio = async (id: string) => {
+  const response = await fetch(`${NODE_API_URL}/api/portfolio/public/${id}`);
+  
+  if (!response.ok) {
+    throw new Error('Портфолио не найдено');
+  }
+
+  return response.json();
 };
 
 // Пример защищённого запроса: получение черновика текущего пользователя

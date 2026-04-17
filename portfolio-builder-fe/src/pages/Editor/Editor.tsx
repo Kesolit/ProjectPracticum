@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { savePortfolioDraft } from "../../api/api";
 import './Editor.css'
 import logo from '../../assets/logo.svg'
 
@@ -34,9 +35,10 @@ interface Review {
 }
 
 interface FooterData {
-  email: string
-  telegram: string
-  github: string
+  name: string;
+  github: string;
+  linkedin: string;
+  telegram: string;
 }
 
 // Компонент блока проектов
@@ -402,6 +404,19 @@ const Editor = () => {
     { name: 'Подвал', desc: 'Контакты', bg: '#E5E7EB', square: '#6B7280', type: 'footer' }
   ]
 
+  const handleSave = async () => {
+    try {
+      // 2. Вызывай функцию, передавая массив блоков, который у тебя в стейте
+      await savePortfolioDraft({
+        title: "Название проекта", // или стейт с названием
+        sections: droppedBlocks           // твой массив блоков
+      });
+      alert('Сохранено на сервере!');
+    } catch (err: any) {
+      alert('Ошибка: ' + err.message);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token')
     const isAuth = localStorage.getItem('isLoggedIn') === 'true'
@@ -574,7 +589,11 @@ const Editor = () => {
         <div className="header-actions">
           <button className="header-btn"><span className="icon">👁</span> Предпросмотр</button>
           <button className="header-btn"><span className="icon">⬇</span> Экспорт</button>
-          <button className="header-btn save-btn">Сохранить портфолио</button>
+          <button 
+            className="header-btn save-btn" 
+            onClick={handleSave} 
+          > Сохранить портфолио
+          </button>
           {isLoggedIn ? (
             <div className="profile-wrapper">
               <button className="profile-btn" onClick={handleLogout} title="Выйти">
