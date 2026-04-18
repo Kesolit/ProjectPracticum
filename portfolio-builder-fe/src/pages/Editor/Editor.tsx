@@ -10,6 +10,7 @@ interface BlockType {
   bg: string
   square: string
   type: string
+  content?: any // Добавили content, чтобы TypeScript не ругался
 }
 
 interface Project {
@@ -41,17 +42,17 @@ interface FooterData {
   telegram: string;
 }
 
-// Компонент блока проектов
-const ProjectsBlock = () => {
-  const [projects, setProjects] = useState<Project[]>([])
+// --- ПОД-КОМПОНЕНТЫ ---
+
+const ProjectsBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
+  const [projects, setProjects] = useState<Project[]>(content?.projects || [])
+
+  useEffect(() => {
+    onChange({ projects });
+  }, [projects]);
 
   const addProject = () => {
-    setProjects([...projects, {
-      id: Date.now(),
-      title: '',
-      link: '',
-      desc: ''
-    }])
+    setProjects([...projects, { id: Date.now(), title: '', link: '', desc: '' }])
   }
 
   const updateProject = (id: number, field: keyof Project, value: string) => {
@@ -70,16 +71,8 @@ const ProjectsBlock = () => {
       <div className="projects-grid">
         {projects.map((project) => (
           <div key={project.id} className="project-card-item fade-in">
-            <button 
-              className="project-remove-btn"
-              onClick={() => removeProject(project.id)}
-              title="Удалить проект"
-            >
-              ✕
-            </button>
-            <div className="project-cover-placeholder">
-              <span>+ обложка</span>
-            </div>
+            <button className="project-remove-btn" onClick={() => removeProject(project.id)} title="Удалить проект">✕</button>
+            <div className="project-cover-placeholder"><span>+ обложка</span></div>
             <input 
               className="project-input-title" 
               placeholder="Название проекта"
@@ -101,7 +94,6 @@ const ProjectsBlock = () => {
             />
           </div>
         ))}
-        
         <button className="add-project-btn" onClick={addProject}>
           <div className="add-icon">+</div>
           <span>добавить проект</span>
@@ -111,11 +103,14 @@ const ProjectsBlock = () => {
   )
 }
 
-// Компонент блока навыков
-const SkillsBlock = () => {
-  const [skills, setSkills] = useState<string[]>([])
+const SkillsBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
+  const [skills, setSkills] = useState<string[]>(content?.skills || [])
   const [isAdding, setIsAdding] = useState(false)
   const [inputValue, setInputValue] = useState('')
+  
+  useEffect(() => {
+    onChange({ skills });
+  }, [skills]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && inputValue.trim()) {
@@ -136,16 +131,10 @@ const SkillsBlock = () => {
       <h2 className="skills-main-title">Технологии</h2>
       <div className="skills-list-wrapper">
         {skills.map((skill, index) => (
-          <div 
-            key={index} 
-            className="skill-badge" 
-            onClick={() => removeSkill(index)}
-            title="Нажмите, чтобы удалить"
-          >
+          <div key={index} className="skill-badge" onClick={() => removeSkill(index)} title="Нажмите, чтобы удалить">
             {skill}
           </div>
         ))}
-        
         {isAdding ? (
           <input
             autoFocus
@@ -157,27 +146,22 @@ const SkillsBlock = () => {
             placeholder="Название..."
           />
         ) : (
-          <button className="add-skill-tag-btn" onClick={() => setIsAdding(true)}>
-            + Добавить навык
-          </button>
+          <button className="add-skill-tag-btn" onClick={() => setIsAdding(true)}>+ Добавить навык</button>
         )}
       </div>
     </div>
   )
 }
 
-// Компонент блока истории опыта
-const ExperienceBlock = () => {
-  const [experiences, setExperiences] = useState<Experience[]>([])
+const ExperienceBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
+  const [experiences, setExperiences] = useState<Experience[]>(content?.experiences || [])
+
+  useEffect(() => {
+    onChange({ experiences });
+  }, [experiences]);
 
   const addExperience = () => {
-    setExperiences([...experiences, {
-      id: Date.now(),
-      role: '',
-      company: '',
-      period: '',
-      desc: ''
-    }])
+    setExperiences([...experiences, { id: Date.now(), role: '', company: '', period: '', desc: '' }])
   }
 
   const updateExperience = (id: number, field: keyof Experience, value: string) => {
@@ -193,30 +177,19 @@ const ExperienceBlock = () => {
   return (
     <div className="experience-container-unfolded">
       <h2 className="experience-main-title">Карьера</h2>
-      
       <div className="timeline-wrapper">
         <div className="timeline-line"></div>
-        
         {experiences.map((exp) => (
           <div key={exp.id} className="timeline-item fade-in">
             <div className="timeline-dot"></div>
-            
             <div className="experience-content">
-              <button
-                className="experience-remove-btn"
-                onClick={() => removeExperience(exp.id)}
-                title="Удалить"
-              >
-                ✕
-              </button>
-              
+              <button className="experience-remove-btn" onClick={() => removeExperience(exp.id)} title="Удалить">✕</button>
               <input 
                 className="exp-input-role" 
                 placeholder="Должность (например, Junior Frontend)" 
                 value={exp.role}
                 onChange={(e) => updateExperience(exp.id, 'role', e.target.value)}
               />
-              
               <div className="exp-meta-row">
                 <input 
                   className="exp-input-company" 
@@ -232,7 +205,6 @@ const ExperienceBlock = () => {
                   onChange={(e) => updateExperience(exp.id, 'period', e.target.value)}
                 />
               </div>
-
               <textarea 
                 className="exp-input-desc" 
                 placeholder="Обязанности и достижения..." 
@@ -248,7 +220,6 @@ const ExperienceBlock = () => {
             </div>
           </div>
         ))}
-        
         <button className="add-experience-link-btn" onClick={addExperience}>
           <span className="plus-icon">+</span> Добавить место работы
         </button>
@@ -257,11 +228,14 @@ const ExperienceBlock = () => {
   )
 }
 
-// Компонент блока отзывов
-const ReviewsBlock = () => {
-  const [reviews, setReviews] = useState<Review[]>([
+const ReviewsBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
+  const [reviews, setReviews] = useState<Review[]>(content?.reviews || [
     { id: 1, text: '', author: '', position: '' }
   ])
+
+  useEffect(() => {
+    onChange({ reviews });
+  }, [reviews]);
 
   const addReview = () => {
     setReviews([...reviews, { id: Date.now(), text: '', author: '', position: '' }])
@@ -278,12 +252,10 @@ const ReviewsBlock = () => {
   return (
     <div className="reviews-container-unfolded">
       <h2 className="reviews-main-title">Отзывы</h2>
-      
       <div className="reviews-stack">
         {reviews.map((rev) => (
           <div key={rev.id} className="review-card-item fade-in">
             <button className="review-card-remove" onClick={() => removeReview(rev.id)}>✕</button>
-            
             <textarea 
               className="review-input-text" 
               placeholder="Текст отзыва рекомендателя..." 
@@ -296,7 +268,6 @@ const ReviewsBlock = () => {
                 target.style.height = `${target.scrollHeight}px`;
               }}
             />
-            
             <div className="review-author-box">
               <input 
                 className="review-input-name" 
@@ -313,7 +284,6 @@ const ReviewsBlock = () => {
             </div>
           </div>
         ))}
-
         <button className="add-review-action-btn" onClick={addReview}>
           <span className="plus-circle">+</span> Добавить отзыв
         </button>
@@ -322,21 +292,14 @@ const ReviewsBlock = () => {
   )
 }
 
-// Компонент блока подвал (footer)
-interface FooterData {
-  name: string;
-  github: string;
-  linkedin: string;
-  telegram: string;
-}
-
-const FooterBlock = () => {
-  const [footerData, setFooterData] = useState<FooterData>({
-    name: '',
-    github: '',
-    linkedin: '',
-    telegram: ''
+const FooterBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
+  const [footerData, setFooterData] = useState<FooterData>(content || {
+    name: '', github: '', linkedin: '', telegram: ''
   });
+
+  useEffect(() => {
+    onChange(footerData);
+  }, [footerData]);
 
   const handleChange = (field: keyof FooterData, value: string) => {
     setFooterData({ ...footerData, [field]: value });
@@ -344,10 +307,7 @@ const FooterBlock = () => {
 
   return (
     <div className="footer-minimal-container">
-      {/* Полоска */}
       <div className="footer-divider"></div>
-      
-      {/* Строка копирайта с полем ввода имени */}
       <div className="footer-copyright-row">
         <span>© 2026</span>
         <input 
@@ -358,31 +318,17 @@ const FooterBlock = () => {
         />
         <span>Все права защищены.</span>
       </div>
-
-      {/* Поля для ссылок ниже */}
       <div className="footer-social-row">
-        <input 
-          className="footer-social-input" 
-          placeholder="GitHub URL" 
-          value={footerData.github}
-          onChange={(e) => handleChange('github', e.target.value)}
-        />
-        <input 
-          className="footer-social-input" 
-          placeholder="LinkedIn URL" 
-          value={footerData.linkedin}
-          onChange={(e) => handleChange('linkedin', e.target.value)}
-        />
-        <input 
-          className="footer-social-input" 
-          placeholder="Telegram URL" 
-          value={footerData.telegram}
-          onChange={(e) => handleChange('telegram', e.target.value)}
-        />
+        <input className="footer-social-input" placeholder="GitHub URL" value={footerData.github} onChange={(e) => handleChange('github', e.target.value)} />
+        <input className="footer-social-input" placeholder="LinkedIn URL" value={footerData.linkedin} onChange={(e) => handleChange('linkedin', e.target.value)} />
+        <input className="footer-social-input" placeholder="Telegram URL" value={footerData.telegram} onChange={(e) => handleChange('telegram', e.target.value)} />
       </div>
     </div>
   );
 };
+
+
+// --- ГЛАВНЫЙ КОМПОНЕНТ РЕДАКТОРА ---
 
 const Editor = () => {
   const [droppedBlocks, setDroppedBlocks] = useState<BlockType[]>([])
@@ -404,16 +350,34 @@ const Editor = () => {
     { name: 'Подвал', desc: 'Контакты', bg: '#E5E7EB', square: '#6B7280', type: 'footer' }
   ]
 
+  const updateBlockContent = (index: number, newContent: any) => {
+    setDroppedBlocks(prev => prev.map((block, i) => 
+      i === index ? { ...block, content: newContent } : block
+    ));
+  };
+
   const handleSave = async () => {
     try {
-      // 2. Вызывай функцию, передавая массив блоков, который у тебя в стейте
-      await savePortfolioDraft({
-        title: "Название проекта", // или стейт с названием
-        sections: droppedBlocks           // твой массив блоков
+      // Отправляем данные на сервер
+      const response = await savePortfolioDraft({
+        title: "Моё крутое портфолио",
+        sections: droppedBlocks
       });
-      alert('Сохранено на сервере!');
+      
+      // Сервер должен вернуть объект, в котором есть id сохраненного портфолио
+      // Например: { id: "12345", message: "Success" }
+      if (response && response.id) {
+        const viewUrl = `${window.location.origin}/view/${response.id}`;
+        
+        // Показываем ссылку пользователю. 
+        // prompt удобен тем, что из него можно легко скопировать текст
+        prompt('Портфолио успешно опубликовано! Скопируйте вашу ссылку:', viewUrl);
+      } else {
+        alert('Сохранено, но сервер не вернул ID портфолио.');
+      }
+      
     } catch (err: any) {
-      alert('Ошибка: ' + err.message);
+      alert('Ошибка при сохранении: ' + err.message);
     }
   };
 
@@ -423,14 +387,20 @@ const Editor = () => {
     setIsLoggedIn(isAuth && !!token)
   }, [])
 
-  const renderBlockContent = (block: BlockType, isExpanded: boolean) => {
-    if (isExpanded) {
+  // Перенесли renderBlockContent ВНУТРЬ Editor, чтобы он видел updateBlockContent
+  const renderBlockContent = (block: BlockType, isExpanded: boolean, index?: number) => {
+    if (isExpanded && index !== undefined) {
+      
       if (block.type === 'nav') {
         return (
           <div className="nav-layout-unfolded">
             <div className="nav-logo-section">
               <div className="logo-placeholder-circle">+</div>
-              <span>МоёЛого.</span>
+              <input 
+                value={block.content?.logoText || 'МоёЛого.'} 
+                onChange={(e) => updateBlockContent(index, { ...block.content, logoText: e.target.value })}
+                style={{ background: 'transparent', border: 'none', color: 'white', fontWeight: 'bold', fontSize: '1.2rem', outline: 'none' }}
+              />
             </div>
             <div className="nav-links-section">
               <div className="nav-link-item">Обо мне</div>
@@ -448,9 +418,27 @@ const Editor = () => {
               <div className="avatar-placeholder">+</div>
             </div>
             <div className="main-content-inputs">
-              <input type="text" className="input-greeting" placeholder="Привет, я Алексей Иванов" />
-              <input type="text" className="input-role" placeholder="Frontend Разработчик" />
-              <textarea className="input-description" placeholder="Краткое описание вашего опыта и стека..." rows={2} />
+              <input 
+                type="text" 
+                className="input-greeting" 
+                placeholder="Привет, я Алексей Иванов" 
+                value={block.content?.greeting || ''} 
+                onChange={(e) => updateBlockContent(index, { ...block.content, greeting: e.target.value })}
+              />
+              <input 
+                type="text" 
+                className="input-role" 
+                placeholder="Frontend Разработчик" 
+                value={block.content?.role || ''} 
+                onChange={(e) => updateBlockContent(index, { ...block.content, role: e.target.value })}
+              />
+              <textarea 
+                className="input-description" 
+                placeholder="Краткое описание вашего опыта и стека..." 
+                rows={2} 
+                value={block.content?.description || ''}
+                onChange={(e) => updateBlockContent(index, { ...block.content, description: e.target.value })}
+              />
             </div>
           </div>
         );
@@ -463,6 +451,8 @@ const Editor = () => {
             <textarea
               className="about-input-field"
               placeholder="Напишите здесь подробную информацию о вашем пути в IT, образовании и увлечениях..."
+              value={block.content?.text || ''}
+              onChange={(e) => updateBlockContent(index, { text: e.target.value })}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = 'auto';
@@ -473,37 +463,14 @@ const Editor = () => {
         );
       }
 
-      if (block.type === 'projects') {
-        return <ProjectsBlock />;
-      }
-
-      if (block.type === 'skills') {
-        return <SkillsBlock />;
-      }
-
-      if (block.type === 'experience') {
-        return <ExperienceBlock />;
-      }
-
-      if (block.type === 'reviews') {
-        return <ReviewsBlock />;
-      }
-
-      if (block.type === 'footer') {
-        return <FooterBlock />;
-      }
-
-      return (
-        <>
-          <div className="dropped-color-square" style={{ backgroundColor: block.square }}></div>
-          <div className="dropped-text">
-            <strong>{block.name}</strong>
-            <p>{block.desc}</p>
-          </div>
-        </>
-      );
+      if (block.type === 'projects') return <ProjectsBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
+      if (block.type === 'skills') return <SkillsBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
+      if (block.type === 'experience') return <ExperienceBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
+      if (block.type === 'reviews') return <ReviewsBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
+      if (block.type === 'footer') return <FooterBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
     }
 
+    // Возврат для свернутых блоков (в сайдбаре или при перетаскивании)
     return (
       <>
         <div className="block-color-square" style={{ backgroundColor: block.square }}></div>
@@ -516,6 +483,7 @@ const Editor = () => {
   };
 
   const handleLogoClick = () => navigate('/')
+  
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('isLoggedIn')
@@ -589,11 +557,7 @@ const Editor = () => {
         <div className="header-actions">
           <button className="header-btn"><span className="icon">👁</span> Предпросмотр</button>
           <button className="header-btn"><span className="icon">⬇</span> Экспорт</button>
-          <button 
-            className="header-btn save-btn" 
-            onClick={handleSave} 
-          > Сохранить портфолио
-          </button>
+          <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
           {isLoggedIn ? (
             <div className="profile-wrapper">
               <button className="profile-btn" onClick={handleLogout} title="Выйти">
@@ -640,6 +604,7 @@ const Editor = () => {
             </div>
           ) : (
             <div className="dropped-blocks-container">
+              {/* ЗДЕСЬ ДОБАВЛЕН ИНДЕКС idx */}
               {droppedBlocks.map((block, idx) => (
                 <div key={idx} className="dropped-card-wrapper fade-in">
                   <div
@@ -652,9 +617,10 @@ const Editor = () => {
                       ${block.type === 'experience' ? 'experience-card-full' : ''}
                       ${block.type === 'reviews' ? 'reviews-card-full' : ''}
                       ${block.type === 'footer' ? 'footer-card-full' : ''}`}
-                    style={block.type !== 'nav' && block.type !== 'main' && block.type !== 'about' && block.type !== 'projects' && block.type !== 'skills' && block.type !== 'experience' && block.type !== 'reviews' && block.type !== 'footer' ? { backgroundColor: block.bg } : {}}
+                    style={!['nav', 'main', 'about', 'projects', 'skills', 'experience', 'reviews', 'footer'].includes(block.type) ? { backgroundColor: block.bg } : {}}
                   >
-                    {renderBlockContent(block, true)}
+                    {/* ПЕРЕДАЕМ ИНДЕКС В ФУНКЦИЮ */}
+                    {renderBlockContent(block, true, idx)}
                     <button className="remove-block-btn" onClick={() => removeBlock(block.type)} title="Удалить блок">✕</button>
                   </div>
                 </div>
