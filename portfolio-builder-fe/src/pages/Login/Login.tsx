@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { loginUser } from '../../api/api'
 import './Login.css'
 
 // Импорты SVG-файлов
@@ -7,12 +9,15 @@ import eyeOff from '../../assets/eye-off.svg'
 import eyeOn from '../../assets/eye-on.svg'
 
 const Login = () => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
   const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   // Принудительный сброс формы при загрузке/обновлении страницы
   useEffect(() => {
@@ -21,16 +26,48 @@ const Login = () => {
       password: ''
     })
     setRememberMe(false)
+    setError('')
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
+    setError('')
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Данные формы входа отправлены:', formData)
+    setIsLoading(true)
+    setError('')
+    try {
+      const result = await loginUser({
+        email: formData.email,
+        password: formData.password,
+      })
+      
+      console.log('Вход успешен:', result)
+      
+      // Сохраняем данные пользователя
+      if (result.token) {
+        localStorage.setItem('token', result.token)
+        localStorage.setItem('jwt_token', result.token)
+      }
+      localStorage.setItem('isLoggedIn', 'true')
+      localStorage.setItem('user', JSON.stringify({
+        id: result.id,
+        email: result.email,
+        fullName: result.fullName
+      }))
+      
+      // Перенаправляем на главную страницу (редактор)
+      navigate('/')
+      
+    } catch (err: any) {
+      console.error('Ошибка входа:', err)
+      setError(err.message || 'Неверный email или пароль')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
