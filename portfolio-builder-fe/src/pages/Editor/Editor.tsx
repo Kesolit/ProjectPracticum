@@ -364,16 +364,13 @@ const Editor = () => {
         sections: droppedBlocks
       });
       
-      // Сервер должен вернуть объект, в котором есть id сохраненного портфолио
-      // Например: { id: "12345", message: "Success" }
-      if (response && response.id) {
-        const viewUrl = `${window.location.origin}/view/${response.id}`;
+      // ✅ ИСПРАВЛЕНО: Теперь проверяем наличие SLUG и используем его для генерации URL
+      if (response && response.slug) {
+        const viewUrl = `${window.location.origin}/view/${response.slug}`;
         
-        // Показываем ссылку пользователю. 
-        // prompt удобен тем, что из него можно легко скопировать текст
         prompt('Портфолио успешно опубликовано! Скопируйте вашу ссылку:', viewUrl);
       } else {
-        alert('Сохранено, но сервер не вернул ID портфолио.');
+        alert('Сохранено, но сервер не вернул ссылку (slug).');
       }
       
     } catch (err: any) {
