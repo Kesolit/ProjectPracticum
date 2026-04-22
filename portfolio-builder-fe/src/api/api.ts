@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://188.68.80.10:5080/"; // C# сервер
+const API_BASE_URL = 'https://portfoliobackend-production-8982.up.railway.app'; // C# сервер
 
 // REGISTER
 export const registerUser = async (userData: {
