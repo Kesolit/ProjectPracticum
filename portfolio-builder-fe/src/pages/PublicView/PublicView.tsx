@@ -4,7 +4,9 @@ import { getPublicPortfolio } from '../../api/api'
 import './PublicView.css'
 
 const PublicView = () => {
-  const { id } = useParams<{ id: string }>()
+  // ✅ СОХРАНЕНА ВАША ЛОГИКА: используем slug вместо id
+  const { slug } = useParams<{ slug: string }>()
+  
   const [portfolio, setPortfolio] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -12,9 +14,12 @@ const PublicView = () => {
   useEffect(() => {
     const loadPortfolio = async () => {
       try {
-        if (id) {
-          const data = await getPublicPortfolio(id)
+        // ✅ СОХРАНЕНА ВАША ЛОГИКА: проверка по slug
+        if (slug) {
+          const data = await getPublicPortfolio(slug)
           setPortfolio(data)
+        } else {
+          setError('Ссылка некорректна')
         }
       } catch (err: any) {
         setError('Не удалось загрузить портфолио')
@@ -23,11 +28,12 @@ const PublicView = () => {
       }
     }
     loadPortfolio()
-  }, [id])
+  }, [slug])
   
   if (loading) return <div className="loading">Загрузка стильного портфолио...</div>
   if (error || !portfolio) return <div className="error">{error || 'Портфолио не найдено'}</div>
 
+  // 👇 ДАЛЕЕ ИДЕТ ПОЛНОСТЬЮ НОВЫЙ ДИЗАЙН ВАШЕГО ФРОНТЕНДЕРА 👇
   const renderBlock = (block: any) => {
     const { type, content } = block;
 
@@ -46,7 +52,7 @@ const PublicView = () => {
         return (
           <div className="main-block-public">
             <div className="main-avatar">
-              <span role="img" aria-label="avatar"></span>
+              <span role="img" aria-label="avatar">👨‍💻</span>
             </div>
             <h1>{content?.greeting || 'Привет, я Алексей Иванов'}</h1>
             <h3 className="main-role">{content?.role || 'Frontend Разработчик'}</h3>
