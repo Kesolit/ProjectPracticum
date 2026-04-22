@@ -1,258 +1,351 @@
+/* ===== 1. БАЗОВЫЕ НАСТРОЙКИ СТРАНИЦЫ ===== */
 .public-view-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  background: #ffffff;
+  background-color: #f9fafb;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 60px;
+}
+
+.portfolio-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.section-container {
+  width: 100%;
+  max-width: 848px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #111827;
+  text-align: left;
+}
+
+/* ===== 2. НАВИГАЦИЯ И ПОДВАЛ ===== */
+.nav-container {
+  width: 100%;
+  max-width: 848px;
+  padding: 32px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.nav-logo {
+  font-weight: 800;
+  font-size: 18px;
   color: #111827;
 }
 
-.portfolio-section-static {
-  margin-bottom: 60px;
-  width: 100%;
+.nav-links {
+  display: flex;
+  gap: 24px;
 }
 
-/* ===== БЛОК: MAIN (Приветствие) ===== */
+.nav-links span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2563EB;
+  cursor: pointer;
+}
+
+.footer-container {
+  width: 100%;
+  max-width: 848px;
+  padding: 40px 20px 20px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  margin-top: 40px;
+}
+
+.footer-copyright {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-links a {
+  font-size: 13px;
+  color: #6B7280;
+  text-decoration: none;
+}
+
+/* ===== 3. ПРИВЕТСТВИЕ (MAIN) ===== */
 .main-block-public {
   text-align: center;
-  padding: 80px 0;
+  padding: 40px 20px;
+  width: 100%;
+  max-width: 848px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.main-avatar {
+  width: 80px;
+  height: 80px;
+  background: #E5E7EB;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  margin-bottom: 24px;
 }
 
 .main-block-public h1 {
-  font-size: 48px;
+  font-size: 36px;
   font-weight: 800;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   color: #111827;
 }
 
-.main-block-public h3 {
-  font-size: 24px;
+.main-role {
+  font-size: 18px;
+  font-weight: 600;
   color: #2563EB;
   margin-bottom: 24px;
 }
 
-.main-block-public p {
-  font-size: 18px;
-  color: #0D47A1;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-/* ===== БЛОК: О СЕБЕ ===== */
-.about-public {
-  padding: 40px;
-  background: #F9FAFB;
-  border-radius: 16px;
-}
-
-.about-public h2 {
-  font-size: 32px;
-  margin-bottom: 20px;
-}
-
-.about-public p {
-  font-size: 18px;
+.main-desc {
+  font-size: 16px;
+  color: #4b5563;
+  max-width: 650px;
   line-height: 1.6;
-  color: #0D47A1;
 }
 
-/* ===== БЛОК: НАВЫКИ ===== */
-.skills-public h2 {
-  margin-bottom: 24px;
-  text-align: center;
+/* ===== 4. О СЕБЕ ===== */
+.about-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #F4F7F6;
+  padding: 32px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
+.about-card p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1e3a8a;
+  margin: 0;
+}
+
+/* ===== 5. НАВЫКИ ===== */
 .skills-list {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  justify-content: center;
 }
 
 .skill-tag {
   padding: 8px 16px;
-  background: #FFFFFF;
+  background: #ffffff;
   color: #374151;
-  border-radius: 99px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
 }
 
-/* ===== БЛОК: ПРОЕКТЫ (Сетка) ===== */
-.projects-public h2 {
-  margin-bottom: 32px;
-}
-
+/* ===== 6. КЕЙСЫ (ПРОЕКТЫ) ===== */
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1max));
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
 }
 
-.project-card-static {
-  padding: 24px;
-  border: 1px solid #E5E7EB;
-  border-radius: 12px;
-  transition: transform 0.2s;
-}
-
-.project-card-static:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.project-card-static h4 {
-  font-size: 20px;
-  margin-bottom: 8px;
-  color: #111827;
-}
-
-.project-card-static p {
-  color: #6B7280;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-/* ===== КНОПКИ И ССЫЛКИ ===== */
-.project-link {
-  display: inline-block;
-  margin-top: 12px;
-  color: #2563EB;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.project-link:hover {
-  text-decoration: underline;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-  .main-block-public h1 { font-size: 32px; }
-  .projects-grid { grid-template-columns: 1fr; }
-}
-
-/* ===== БЛОК: ОПЫТ РАБОТЫ ===== */
-.experience-public {
-  padding: 40px;
-  background: #F9FAFB;
+.case-card {
+  background: #ffffff;
   border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #F4F7F6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
 }
 
-.experience-public h2 {
-  margin-bottom: 32px;
-  text-align: center;
+.case-cover {
+  width: 100%;
+  height: 160px;
 }
 
-.timeline-public {
+.case-info {
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 8px;
 }
 
-.experience-item-public {
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
-  border-left: 4px solid #F97316;
-}
-
-.experience-item-public h3 {
+.case-title {
   font-size: 20px;
-  margin-bottom: 8px;
+  font-weight: 700;
+  margin: 0;
   color: #111827;
 }
 
-.experience-meta {
-  color: #6B7280;
-  font-size: 14px;
-  margin-bottom: 12px;
+.case-link {
+  color: #2563EB;
+  text-decoration: none;
+  font-size: 13px;
+  margin-bottom: 8px;
 }
 
-.experience-item-public p {
-  color: #374151;
+.case-description {
+  color: #1e3a8a;
   line-height: 1.5;
+  margin: 0;
+  font-size: 14px;
 }
 
-/* ===== БЛОК: ОТЗЫВЫ ===== */
-.reviews-public {
-  padding: 40px;
-  background: #F9FAFB;
+/* ===== 7. КАРЬЕРА ===== */
+.timeline-container {
+  background: #ffffff;
   border-radius: 16px;
+  border: 1px solid #F4F7F6;
+  padding: 32px 40px;
+  position: relative;
 }
 
-.reviews-public h2 {
-  margin-bottom: 32px;
+/* Вертикальная серая линия */
+.timeline-container::before {
+  content: '';
+  position: absolute;
+  left: 45px;
+  top: 40px;
+  bottom: 40px;
+  width: 2px;
+  background: #E5E7EB;
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 32px;
+  margin-bottom: 40px;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Точки на таймлайне */
+.timeline-dot {
+  position: absolute;
+  left: -5px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #D1D5DB;
+  border: 2px solid #ffffff;
+  box-sizing: content-box;
+}
+
+.timeline-dot.active {
+  background: #3B82F6;
+}
+
+.timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.exp-role {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: #111827;
+}
+
+.exp-meta {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exp-dot {
+  font-size: 10px;
+}
+
+.exp-desc {
+  margin-top: 4px;
+  color: #1e3a8a;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* ===== 8. ОТЗЫВЫ (ГОЛУБОЙ БЛОК) ===== */
+.review-card-single {
+  background-color: #EEF2FF;
+  border-radius: 16px;
+  padding: 40px 32px;
   text-align: center;
+  position: relative;
 }
 
-.reviews-grid-public {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
-}
-
-.review-card-public {
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.quote-icon {
+  position: absolute;
+  top: 24px;
+  left: 32px;
+  font-size: 48px;
+  font-weight: 900;
+  color: #C7D2FE;
+  line-height: 1;
+  font-family: Georgia, serif;
 }
 
 .review-text {
   font-style: italic;
   color: #374151;
   line-height: 1.6;
-  margin-bottom: 16px;
+  font-size: 15px;
+  margin-bottom: 24px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .review-author {
-  border-top: 1px solid #E5E7EB;
-  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .review-author strong {
-  display: block;
   color: #111827;
-  margin-bottom: 4px;
+  font-size: 15px;
 }
 
 .review-author span {
-  color: #6B7280;
-  font-size: 14px;
+  color: #2563EB;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-/* ===== БЛОК: ПОДВАЛ ===== */
-.footer-public {
-  margin-top: 60px;
-  padding: 40px 20px;
-  background: #1F2937;
-  color: #9CA3AF;
-  border-radius: 16px;
-}
-
-.footer-content-public {
-  max-width: 1200px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.footer-content-public p {
-  margin-bottom: 16px;
-}
-
-.footer-links-public {
-  display: flex;
-  gap: 24px;
-  justify-content: center;
-}
-
-.footer-links-public a {
-  color: #9CA3AF;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.footer-links-public a:hover {
-  color: white;
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 768px) {
+  .projects-grid { grid-template-columns: 1fr; }
+  .nav-container { flex-direction: column; gap: 16px; }
+  .footer-container { flex-direction: column; gap: 16px; text-align: center; }
+  .timeline-container::before { left: 25px; }
+  .timeline-container { padding: 24px 20px; }
 }
