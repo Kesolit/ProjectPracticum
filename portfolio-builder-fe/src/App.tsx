@@ -8,13 +8,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Твои текущие роуты */}
         <Route path="/" element={<Editor />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         
-        {/* 2. Добавляем динамический роут для просмотра */}
-        <Route path="/view/:id" element={<PublicView />} />
+        {/* Исправлено: теперь здесь используется slug вместо id */}
+        <Route path="/view/:slug" element={<PublicView />} />
       </Routes>
     </BrowserRouter>
   )
