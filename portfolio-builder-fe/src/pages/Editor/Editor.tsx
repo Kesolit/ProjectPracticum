@@ -484,11 +484,16 @@ const Editor = () => {
   const handleLogoClick = () => navigate('/')
   
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('isLoggedIn')
-    setIsLoggedIn(false)
-    navigate('/login')
-  }
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('user');
+    // старые ключи на всякий случай
+    localStorage.removeItem('token');
+    localStorage.removeItem('jwt_token');
+    setIsLoggedIn(false);
+    navigate('/login');
+  };
 
   const handleDragStart = (e: React.DragEvent, block: BlockType) => {
     e.dataTransfer.setData('block', JSON.stringify(block))
