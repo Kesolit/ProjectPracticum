@@ -36,39 +36,24 @@ const Login = () => {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
-    try {
-      const result = await loginUser({
-        email: formData.email,
-        password: formData.password,
-      })
-      
-      console.log('Вход успешен:', result)
-      
-      // Сохраняем данные пользователя
-      if (result.token) {
-        localStorage.setItem('token', result.token)
-        localStorage.setItem('jwt_token', result.token)
-      }
-      localStorage.setItem('isLoggedIn', 'true')
-      localStorage.setItem('user', JSON.stringify({
-        id: result.id,
-        email: result.email,
-        fullName: result.fullName
-      }))
-      
-      // Перенаправляем на главную страницу (редактор)
-      navigate('/')
-      
-    } catch (err: any) {
-      console.error('Ошибка входа:', err)
-      setError(err.message || 'Неверный email или пароль')
-    } finally {
-      setIsLoading(false)
-    }
+  e.preventDefault();
+  setIsLoading(true);
+  setError('');
+  try {
+    const result = await loginUser({
+      email: formData.email,
+      password: formData.password,
+    });
+    console.log('Вход успешен:', result);
+    // Токены уже сохранены внутри loginUser
+    navigate('/');
+  } catch (err: any) {
+    console.error('Ошибка входа:', err);
+    setError(err.message || 'Неверный email или пароль');
+  } finally {
+    setIsLoading(false);
   }
+};
 
   return (
     <div className="login-page">
