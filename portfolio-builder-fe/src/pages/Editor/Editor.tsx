@@ -48,8 +48,10 @@ const ProjectsBlock = ({ content, onChange }: { content: any, onChange: (data: a
   const [projects, setProjects] = useState<Project[]>(content?.projects || [])
 
   useEffect(() => {
-    onChange({ projects });
-  }, [projects]);
+    const token = localStorage.getItem('accessToken');
+    const isAuth = localStorage.getItem('isLoggedIn') === 'true';
+    setIsLoggedIn(isAuth && !!token);
+  }, []);
 
   const addProject = () => {
     setProjects([...projects, { id: Date.now(), title: '', link: '', desc: '' }])
