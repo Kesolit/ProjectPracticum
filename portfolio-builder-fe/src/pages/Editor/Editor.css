@@ -1471,3 +1471,16 @@
 .profile-avatar-container:hover .profile-avatar {
   opacity: 0.5;
 }
+.dropped-card-wrapper {
+  cursor: grab;
+  transition: transform 0.2s ease;
+}
+
+.dropped-card-wrapper:active {
+  cursor: grabbing;
+}
+
+/* Визуальный эффект при перетаскивании (опционально) */
+.dropped-card-wrapper[draggable="true"] {
+  opacity: 1;
+}

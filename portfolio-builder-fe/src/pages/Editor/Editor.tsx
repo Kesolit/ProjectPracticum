@@ -5,6 +5,7 @@ import './Editor.css'
 import logo from '../../assets/logo.svg'
 import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
+import SaveSuccessModal from '../../components/SaveSuccessModal/SaveSuccessModal';
 
 interface BlockType {
   name: string
@@ -334,6 +335,10 @@ const Editor = () => {
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState('');
+  const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  
   
   const navigate = useNavigate()
 
@@ -350,33 +355,60 @@ const Editor = () => {
     { name: 'Кастомный блок ', desc: 'Свободное содержимое', bg: '#F3F4F6', square: '#9CA3AF', type: 'custom' }
   ]
 
+  const handleSortStart = (index: number) => {
+  setDraggedItemIndex(index);
+};
+
+const handleSortOver = (e: React.DragEvent, index: number) => {
+  e.preventDefault();
+  
+  // Если мы тащим новый блок из сайдбара или над самим собой — ничего не делаем
+  if (draggedItemIndex === null || draggedItemIndex === index) return;
+
+  const newBlocks = [...droppedBlocks];
+  const draggedItem = newBlocks[draggedItemIndex];
+  
+  // Удаляем элемент с его старого места и вставляем на новое
+  newBlocks.splice(draggedItemIndex, 1);
+  newBlocks.splice(index, 0, draggedItem);
+  
+  setDraggedItemIndex(index); // Обновляем индекс, так как элемент переместился
+  setDroppedBlocks(newBlocks);
+};
+
+const handleSortEnd = () => {
+  setDraggedItemIndex(null);
+};
+
   const updateBlockContent = (index: number, newContent: any) => {
     setDroppedBlocks(prev => prev.map((block, i) => 
       i === index ? { ...block, content: newContent } : block
     ));
   };
 
-  const handleSave = async () => {
-    try {
-      const response = await savePortfolioDraft({
-        title: "Моё крутое портфолио",
-        sections: droppedBlocks
-      });
+const handleSave = async () => {
+  try {
+    const response = await savePortfolioDraft({
+      title: "Моё крутое портфолио",
+      sections: droppedBlocks
+    });
+    
+    if (response && response.slug) {
+      // Формируем полную ссылку
+      const viewUrl = `${window.location.origin}/view/${response.slug}`;
       
-      if (response && response.slug) {
-        const viewUrl = `${window.location.origin}/view/${response.slug}`;
-        
-        prompt('Портфолио успешно опубликовано! Скопируйте вашу ссылку:', viewUrl);
-      } else {
-        alert('Сохранено, но сервер не вернул ссылку (slug).');
-      }
-      
-    } catch (err: any) {
-      alert('Ошибка при сохранении: ' + err.message);
+      // Обновляем состояния для модалки
+      setCurrentUrl(viewUrl);
+      setIsModalOpen(true);
+    } else {
+      alert('Сохранено, но сервер не вернул ссылку (slug).');
     }
-  };
+    
+  } catch (err: any) {
+    alert('Ошибка при сохранении: ' + err.message);
+  }
+};
 
-  // ИСПРАВЛЕННАЯ ЛОГИКА ПРОВЕРКИ АВТОРИЗАЦИИ
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
@@ -525,7 +557,13 @@ const Editor = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    const blockData = e.dataTransfer.getData('block')
+    // Если мы просто сортировали блоки внутри, выходим
+    if (draggedItemIndex !== null) {
+      setDraggedItemIndex(null);
+      return;
+    }
+
+    const blockData = e.dataTransfer.getData('block');
     if (blockData) {
       const block: BlockType = JSON.parse(blockData)
       if (!droppedBlocks.some(b => b.type === block.type)) {
@@ -619,7 +657,14 @@ const Editor = () => {
           ) : (
             <div className="dropped-blocks-container">
               {droppedBlocks.map((block, idx) => (
-                <div key={idx} className="dropped-card-wrapper fade-in">
+                <div 
+                  key={`${block.type}-${idx}`} 
+                  className="dropped-card-wrapper fade-in"
+                  draggable // Обязательно делаем блок перетаскиваемым
+                  onDragStart={() => handleSortStart(idx)}
+                  onDragOver={(e) => handleSortOver(e, idx)}
+                  onDragEnd={handleSortEnd}
+                >
                   <div
                     className={`dropped-card
                       ${block.type === 'nav' ? 'nav-card-full' : ''}
@@ -632,11 +677,16 @@ const Editor = () => {
                       ${block.type === 'footer' ? 'footer-card-full' : ''}
                       ${block.type === 'github' ? 'github-card-full' : ''}
                       ${block.type === 'custom' ? 'custom-card-full' : ''}`}
-                    style={!['nav', 'main', 'about', 'projects', 'skills', 'experience', 'reviews', 'footer', 'github', 'custom'].includes(block.type) ? { backgroundColor: block.bg } : {}}
                   >
                     <div className="block-label-badge">{block.name}</div>
                     {renderBlockContent(block, true, idx)}
-                    <button className="remove-block-btn" onClick={() => removeBlock(block.type)} title="Удалить блок">✕</button>
+                    <button 
+                      className="remove-block-btn" 
+                      onClick={() => removeBlock(block.type)} 
+                      title="Удалить блок"
+                    >
+                      ✕
+                    </button>
                   </div>
                 </div>
               ))}
@@ -645,15 +695,14 @@ const Editor = () => {
         </main>
       </div>
 
+      <SaveSuccessModal 
+        isOpen={isModalOpen} 
+        publicUrl={currentUrl} 
+        onClose={() => setIsModalOpen(false)} 
+      />
+
       {isDragging && draggedBlock && (
-        <div
-          className="drag-cursor-block"
-          style={{
-            left: dragPosition.x + 10,
-            top: dragPosition.y + 10,
-            backgroundColor: draggedBlock.bg,
-          }}
-        >
+        <div className="drag-cursor-block" /* ... */ >
           {renderBlockContent(draggedBlock, false)}
         </div>
       )}
