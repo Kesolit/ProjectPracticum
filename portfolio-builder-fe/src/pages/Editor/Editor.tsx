@@ -353,7 +353,7 @@ const Editor = () => {
     { name: 'Отзывы', desc: 'Рекомендации', bg: '#FCE7F3', square: '#EC489A', type: 'reviews' },
     { name: 'Подвал', desc: 'Контакты', bg: '#E5E7EB', square: '#6B7280', type: 'footer' },
     { name: 'Интеграция GitHub', desc: 'Репозиторий', bg: '#E0F2FE', square: '#0EA5E9', type: 'github' },
-    { name: 'Свой блок', desc: 'Свободный текст', bg: '#F3F4F6', square: '#9CA3AF', type: 'custom' }
+    { name: 'Кастомный блок ', desc: 'Свободное содержимое', bg: '#F3F4F6', square: '#9CA3AF', type: 'custom' }
   ]
 
   const updateBlockContent = (index: number, newContent: any) => {
