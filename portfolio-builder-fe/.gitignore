@@ -1,1 +1,17 @@
-node_modules/
+# Зависимости
+node_modules
+
+# Сборка
+dist
+
+# Секреты
+.env
+.env.local
+.env.*.local
+
+# Логи и системные файлы
+npm-debug.log*
+.DS_Store
+
+# Настройки VS Code
+.vscode/

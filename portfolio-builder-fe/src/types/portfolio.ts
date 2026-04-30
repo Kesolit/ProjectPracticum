@@ -1,4 +1,4 @@
-// Все типы блоков по макету (ровно 8)
+// Все типы блоков по макету
 export type BlockType = 
   | 'main'        // Главный блок (хедер и приветствие)
   | 'navigation'  // Навигация (верхнее меню)
@@ -8,6 +8,8 @@ export type BlockType =
   | 'experience'  // История опыта (карьера)
   | 'reviews'     // Отзывы (рекомендации)
   | 'footer'      // Подвал (контакты);
+  | 'custom'
+  | 'github';
 
 export interface ISection {
   id: string;
