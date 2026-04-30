@@ -1419,3 +1419,55 @@
   pointer-events: none;
   display: block;
 }
+
+/* ===== Обновленные стили профиля с оверлеем "Выйти" ===== */
+.profile-avatar-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  transition: border-color 0.2s ease;
+}
+
+.profile-avatar-container:hover {
+  border-color: #515DEF;
+}
+
+/* Сама картинка аватарки */
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.2s ease;
+}
+
+.logout-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  opacity: 0; /* Невидимый изначально */
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.profile-avatar-container:hover .logout-overlay {
+  opacity: 1;
+}
+
+.profile-avatar-container:hover .profile-avatar {
+  opacity: 0.5;
+}

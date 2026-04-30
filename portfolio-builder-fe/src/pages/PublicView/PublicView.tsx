@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { getPublicPortfolio } from '../../api/api' 
 import './PublicView.css'
+import { GithubBlock } from '../../components/blocks/GithubBlock';
+import { CustomBlock } from '../../components/blocks/CustomBlock';
 
 const PublicView = () => {
-  // ✅ СОХРАНЕНА ВАША ЛОГИКА: используем slug вместо id
   const { slug } = useParams<{ slug: string }>()
   
   const [portfolio, setPortfolio] = useState<any>(null)
@@ -14,7 +15,6 @@ const PublicView = () => {
   useEffect(() => {
     const loadPortfolio = async () => {
       try {
-        // ✅ СОХРАНЕНА ВАША ЛОГИКА: проверка по slug
         if (slug) {
           const data = await getPublicPortfolio(slug)
           setPortfolio(data)
@@ -89,7 +89,6 @@ const PublicView = () => {
             <div className="projects-grid">
               {content?.projects?.map((p: any, i: number) => (
                 <div key={i} className="case-card">
-                  {/* Заглушка для цветной обложки, как на макете */}
                   <div className="case-cover" style={{ background: i % 2 === 0 ? 'linear-gradient(135deg, #818CF8, #C084FC)' : 'linear-gradient(135deg, #34D399, #2DD4BF)' }}></div>
                   <div className="case-info">
                     <h4 className="case-title">{p.title}</h4>
@@ -136,6 +135,22 @@ const PublicView = () => {
                 </div>
               </div>
             ))}
+          </div>
+        );
+
+      case 'github':
+        return (
+          <div className="section-container">
+            {/* Добавляем заголовок в едином стиле публичной страницы */}
+            <h2 className="section-title">Мой OpenSource вклад</h2>
+            <GithubBlock content={content} readOnly />
+          </div>
+        );
+
+      case 'custom':
+        return (
+          <div className="section-container">
+            <CustomBlock content={content} readOnly />
           </div>
         );
       

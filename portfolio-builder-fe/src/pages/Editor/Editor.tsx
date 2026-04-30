@@ -49,12 +49,6 @@ interface FooterData {
 const ProjectsBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
   const [projects, setProjects] = useState<Project[]>(content?.projects || [])
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem('accessToken');
-  //   const isAuth = localStorage.getItem('isLoggedIn') === 'true';
-  //   setIsLoggedIn(isAuth && !!token);
-  // }, []);
-
   const addProject = () => {
     setProjects([...projects, { id: Date.now(), title: '', link: '', desc: '' }])
   }
@@ -382,13 +376,20 @@ const Editor = () => {
     }
   };
 
+  // ИСПРАВЛЕННАЯ ЛОГИКА ПРОВЕРКИ АВТОРИЗАЦИИ
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    const isAuth = localStorage.getItem('isLoggedIn') === 'true'
-    setIsLoggedIn(isAuth && !!token)
+    const checkAuth = () => {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      const isAuth = localStorage.getItem('isLoggedIn') === 'true';
+      setIsLoggedIn(!!isAuth && !!token);
+    };
+
+    checkAuth();
+    // Слушаем изменения в localStorage (помогает, если вход был в другой вкладке)
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
   }, [])
 
-  // Перенесли renderBlockContent ВНУТРЬ Editor, чтобы он видел updateBlockContent
   const renderBlockContent = (block: BlockType, isExpanded: boolean, index?: number) => {
     if (isExpanded && index !== undefined) {
       
@@ -473,7 +474,6 @@ const Editor = () => {
       if (block.type === 'custom') return <CustomBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
     }
 
-    // Возврат для свернутых блоков (в сайдбаре или при перетаскивании)
     return (
       <>
         <div className="block-color-square" style={{ backgroundColor: block.square }}></div>
@@ -492,7 +492,6 @@ const Editor = () => {
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('user');
-    // старые ключи на всякий случай
     localStorage.removeItem('token');
     localStorage.removeItem('jwt_token');
     setIsLoggedIn(false);
@@ -566,11 +565,18 @@ const Editor = () => {
           <button className="header-btn"><span className="icon">👁</span> Предпросмотр</button>
           <button className="header-btn"><span className="icon">⬇</span> Экспорт</button>
           <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
+          
+          {/* ОБНОВЛЕННЫЙ УСЛОВНЫЙ РЕНДЕРИНГ ПРОФИЛЯ */}
           {isLoggedIn ? (
-            <div className="profile-wrapper">
-              <button className="profile-btn" onClick={handleLogout} title="Выйти">
-                <span className="profile-icon">👤</span>
-              </button>
+            <div className="profile-wrapper" onClick={handleLogout}>
+              <div className="profile-avatar-container">
+                <img 
+                  src="https://via.placeholder.com/40" // Сюда можно подставить фото из localStorage
+                  alt="User" 
+                  className="profile-avatar"
+                />
+                <div className="logout-overlay">Выйти</div>
+              </div>
             </div>
           ) : (
             <div className="auth-group">
@@ -612,7 +618,6 @@ const Editor = () => {
             </div>
           ) : (
             <div className="dropped-blocks-container">
-              {/* ЗДЕСЬ ДОБАВЛЕН ИНДЕКС idx */}
               {droppedBlocks.map((block, idx) => (
                 <div key={idx} className="dropped-card-wrapper fade-in">
                   <div
@@ -630,7 +635,6 @@ const Editor = () => {
                     style={!['nav', 'main', 'about', 'projects', 'skills', 'experience', 'reviews', 'footer', 'github', 'custom'].includes(block.type) ? { backgroundColor: block.bg } : {}}
                   >
                     <div className="block-label-badge">{block.name}</div>
-                    {/* ПЕРЕДАЕМ ИНДЕКС В ФУНКЦИЮ */}
                     {renderBlockContent(block, true, idx)}
                     <button className="remove-block-btn" onClick={() => removeBlock(block.type)} title="Удалить блок">✕</button>
                   </div>

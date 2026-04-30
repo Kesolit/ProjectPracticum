@@ -10,13 +10,13 @@ export interface ICustomElement {
   content: string;
 }
 
-export const CustomBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
+// ДОБАВИЛИ readOnly и сделали onChange необязательным
+export const CustomBlock = ({ content, onChange, readOnly }: { content: any, onChange?: (data: any) => void, readOnly?: boolean }) => {
   const [elements, setElements] = useState<ICustomElement[]>(content?.elements || []);
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Синхронизация данных с основным стейтом редактора
   useEffect(() => {
-    onChange({ elements });
+    if (onChange) onChange({ elements });
   }, [elements]);
 
   const addElement = (type: 'title' | 'text', defaultContent: string, width: number, height: number) => {
@@ -69,45 +69,37 @@ export const CustomBlock = ({ content, onChange }: { content: any, onChange: (da
   };
 
   return (
-    <div className="custom-block-container" onMouseDown={() => setActiveId(null)}>
+    <div className="custom-block-container" onMouseDown={() => !readOnly && setActiveId(null)}>
       
-      {/* Панель инструментов на сером фоне */}
-      <div className="custom-toolbar" onMouseDown={e => e.stopPropagation()}>
-        <div className="custom-toolbar-buttons">
-          <button 
-            onClick={() => addElement('title', 'Хобби и увлечения', 350, 60)} 
-            className="custom-toolbar-btn"
-          >
-            <span className="btn-icon">T</span> Добавить заголовок
-          </button>
-          
-          <button 
-            onClick={() => addElement('text', 'Ваш текст...', 350, 120)} 
-            className="custom-toolbar-btn"
-          >
-            <span className="btn-icon" style={{ fontWeight: 400 }}>T</span> Добавить текст
-          </button>
-          
-          <button 
-            onClick={addImage} 
-            className="custom-toolbar-btn"
-          >
-            Добавить изображение
-          </button>
+      {/* Прячем тулбар в режиме readOnly */}
+      {!readOnly && (
+        <div className="custom-toolbar" onMouseDown={e => e.stopPropagation()}>
+          <div className="custom-toolbar-buttons">
+            <button onClick={() => addElement('title', 'Хобби и увлечения', 350, 60)} className="custom-toolbar-btn">
+              <span className="btn-icon">T</span> Добавить заголовок
+            </button>
+            <button onClick={() => addElement('text', 'В свободное от написания кода время я увлекаюсь...', 350, 120)} className="custom-toolbar-btn">
+              <span className="btn-icon" style={{ fontWeight: 400 }}>T</span> Добавить текст
+            </button>
+            <button onClick={addImage} className="custom-toolbar-btn">
+              Добавить изображение
+            </button>
+          </div>
+          <span className="custom-toolbar-hint">Элементы можно перемещать и растягивать</span>
         </div>
-        <span className="custom-toolbar-hint">Элементы можно перемещать и растягивать</span>
-      </div>
+      )}
 
-      {/* Холст в пунктирной рамке */}
-      <div className="custom-canvas-area">
+      {/* Холст */}
+      <div className="custom-canvas-area" style={{ border: readOnly ? 'none' : '1.5px dashed #d1d5db' }}>
         {elements.map(el => (
           <DraggableItem
             key={el.id}
             item={el}
-            isActive={activeId === el.id}
-            onSelect={() => setActiveId(el.id)}
+            isActive={!readOnly && activeId === el.id}
+            onSelect={() => !readOnly && setActiveId(el.id)}
             updateItem={updateElement}
             removeItem={removeElement}
+            readOnly={readOnly} // Передаем readOnly внутрь элемента
           />
         ))}
       </div>
@@ -115,8 +107,8 @@ export const CustomBlock = ({ content, onChange }: { content: any, onChange: (da
   );
 };
 
-// --- Вспомогательный компонент элемента ---
-const DraggableItem = ({ item, isActive, onSelect, updateItem, removeItem }: any) => {
+// --- Вспомогательный компонент ---
+const DraggableItem = ({ item, isActive, onSelect, updateItem, removeItem, readOnly }: any) => {
   const [pos, setPos] = useState({ x: item.x, y: item.y });
   const [size, setSize] = useState({ w: item.width, h: item.height });
   
@@ -126,26 +118,29 @@ const DraggableItem = ({ item, isActive, onSelect, updateItem, removeItem }: any
   const dragStart = useRef({ x: 0, y: 0, w: 0, h: 0, posX: 0, posY: 0 });
 
   const startDrag = (e: React.MouseEvent) => {
+    if (readOnly) return;
     setIsDragging(true);
     dragStart.current = { x: e.clientX, y: e.clientY, w: size.w, h: size.h, posX: pos.x, posY: pos.y };
   };
 
   const handleWrapperMouseDown = (e: React.MouseEvent) => {
+    if (readOnly) return;
     e.stopPropagation();
     onSelect();
-    // Изображение можно тащить за всё тело, текст — нет (только за ручку)
     if (item.type === 'image') {
       startDrag(e);
     }
   };
 
   const handleDragHandleMouseDown = (e: React.MouseEvent) => {
+    if (readOnly) return;
     e.stopPropagation();
     onSelect();
     startDrag(e);
   };
 
   const handleResizeStart = (e: React.MouseEvent, dir: string) => {
+    if (readOnly) return;
     e.stopPropagation();
     onSelect();
     setResizeDir(dir);
@@ -153,6 +148,8 @@ const DraggableItem = ({ item, isActive, onSelect, updateItem, removeItem }: any
   };
 
   useEffect(() => {
+    if (readOnly) return; // Если readOnly, даже не вешаем обработчики
+
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
         setPos({
@@ -197,15 +194,21 @@ const DraggableItem = ({ item, isActive, onSelect, updateItem, removeItem }: any
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, resizeDir, pos, size, item.id, updateItem]);
+  }, [isDragging, resizeDir, pos, size, item.id, updateItem, readOnly]);
 
   return (
     <div
       className={`custom-draggable-item ${isActive ? 'active' : ''}`}
-      style={{ left: pos.x, top: pos.y, width: size.w, height: size.h }}
+      style={{ 
+        left: pos.x, 
+        top: pos.y, 
+        width: size.w, 
+        height: size.h,
+        cursor: readOnly ? 'default' : (isDragging ? 'grabbing' : 'grab') // Меняем курсор в публичном виде
+      }}
       onMouseDown={handleWrapperMouseDown}
     >
-      {isActive && (
+      {isActive && !readOnly && (
         <>
           <button
             className="custom-item-delete"
@@ -215,7 +218,6 @@ const DraggableItem = ({ item, isActive, onSelect, updateItem, removeItem }: any
             ✕
           </button>
           
-          {/* Ручка для перетаскивания (только для текста) */}
           {item.type !== 'image' && (
             <div className="custom-drag-handle" onMouseDown={handleDragHandleMouseDown}>
               <svg width="10" height="10" viewBox="0 0 16 16" fill="#3b82f6">
@@ -226,11 +228,15 @@ const DraggableItem = ({ item, isActive, onSelect, updateItem, removeItem }: any
         </>
       )}
 
-      {/* Точки ресайза по углам */}
-      <div className="resize-handle nw" onMouseDown={(e) => handleResizeStart(e, 'nw')} />
-      <div className="resize-handle ne" onMouseDown={(e) => handleResizeStart(e, 'ne')} />
-      <div className="resize-handle sw" onMouseDown={(e) => handleResizeStart(e, 'sw')} />
-      <div className="resize-handle se" onMouseDown={(e) => handleResizeStart(e, 'se')} />
+      {/* Точки ресайза только если активен и не readOnly */}
+      {!readOnly && (
+        <>
+          <div className="resize-handle nw" onMouseDown={(e) => handleResizeStart(e, 'nw')} />
+          <div className="resize-handle ne" onMouseDown={(e) => handleResizeStart(e, 'ne')} />
+          <div className="resize-handle sw" onMouseDown={(e) => handleResizeStart(e, 'sw')} />
+          <div className="resize-handle se" onMouseDown={(e) => handleResizeStart(e, 'se')} />
+        </>
+      )}
 
       {item.type === 'image' ? (
         <img src={item.content} alt="custom" className="custom-image-item" draggable={false} />
@@ -238,12 +244,16 @@ const DraggableItem = ({ item, isActive, onSelect, updateItem, removeItem }: any
         <textarea
           className={`custom-text-input ${item.type === 'title' ? 'title' : 'body'}`}
           value={item.content}
+          readOnly={readOnly} // Запрещаем печатать текст в публичном виде
           onChange={(e) => updateItem(item.id, { content: e.target.value })}
           onMouseDown={(e) => {
-            onSelect();
-            e.stopPropagation(); // Разрешаем выделение текста внутри
+            if (!readOnly) {
+              onSelect();
+              e.stopPropagation();
+            }
           }}
-          placeholder="Введите текст..."
+          placeholder={readOnly ? '' : "Введите текст..."}
+          style={{ cursor: readOnly ? 'text' : 'text' }}
         />
       )}
     </div>
