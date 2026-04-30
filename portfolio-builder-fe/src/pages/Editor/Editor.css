@@ -1232,3 +1232,190 @@
 .footer-social-input::placeholder {
   color: #9CA3AF;
 }
+
+/* ===== Стили для Кастомного блока (Свободный холст) ===== */
+.custom-block-container {
+  width: 100%;
+  background: transparent;
+}
+
+.custom-toolbar {
+  display: flex;
+  flex-direction: column; /* Ставим элементы в колонку (кнопки сверху, текст снизу) */
+  gap: 12px;
+  padding: 16px 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px; /* Скругляем все углы */
+  background: #f9fafb; /* Тот самый серый фон */
+  margin-bottom: 16px; /* Визуально отлепляем от холста */
+}
+
+.custom-toolbar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.custom-toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  background: white;
+  border: 1.5px solid #d1d5db;
+  border-radius: 6px;
+  width: auto; 
+  height: 36px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 1;
+}
+
+.custom-toolbar-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.btn-icon {
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+
+.custom-toolbar-hint {
+  color: #9ca3af;
+  font-size: 13px;
+  /* Убрали боковую рамку и margin-left, так как текст теперь на новой строке */
+}
+
+.custom-canvas-area {
+  position: relative;
+  width: 100%;
+  min-height: 500px;
+  border: 1.5px dashed #d1d5db; /* Пунктирная рамка */
+  border-radius: 8px; /* Скругляем все углы */
+  background: #ffffff; /* Сам холст белый */
+  overflow: hidden;
+}
+
+.custom-draggable-item {
+  position: absolute;
+  border: 1px solid transparent;
+  cursor: grab;
+}
+
+.custom-draggable-item.active {
+  border-color: #3b82f6; 
+}
+
+.custom-draggable-item:active {
+  cursor: grabbing;
+}
+
+/* Белые кружочки по углам */
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  border: 1.5px solid #3b82f6;
+  border-radius: 50%;
+  display: none;
+  z-index: 5;
+}
+
+.custom-draggable-item.active .resize-handle {
+  display: block;
+}
+
+.resize-handle.nw { top: -6px; left: -6px; cursor: nwse-resize; }
+.resize-handle.ne { top: -6px; right: -6px; cursor: nesw-resize; }
+.resize-handle.sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+.resize-handle.se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
+/* Кнопка удаления (Красный крестик) */
+.custom-item-delete {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  border: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.custom-draggable-item.active .custom-item-delete {
+  opacity: 1;
+}
+
+/* Кнопочка (ручка) для перетаскивания текста */
+.custom-drag-handle {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 1.5px solid #3b82f6;
+  border-radius: 4px;
+  width: 24px;
+  height: 16px;
+  cursor: grab;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Контент */
+.custom-text-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  resize: none; 
+  outline: none;
+  font-family: inherit;
+  color: #111827;
+  padding: 8px;
+}
+
+.custom-text-input.title {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.custom-text-input.body {
+  font-size: 16px;
+  font-weight: 400;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.custom-image-item {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  display: block;
+}
