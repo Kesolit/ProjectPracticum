@@ -16,7 +16,8 @@ const LANG_COLORS: Record<string, string> = {
   Java: '#b07219', Go: '#00ADD8', Ruby: '#701516', PHP: '#4F5D95'
 };
 
-export const GithubBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
+// ДОБАВИЛИ readOnly и сделали onChange необязательным
+export const GithubBlock = ({ content, onChange, readOnly }: { content: any, onChange?: (data: any) => void, readOnly?: boolean }) => {
   const [inputUrl, setInputUrl] = useState(content?.url || '');
   const [data, setData] = useState<IFullGithubData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -39,7 +40,7 @@ export const GithubBlock = ({ content, onChange }: { content: any, onChange: (da
     
     if (fetchedData) {
       setData(fetchedData);
-      onChange({ url: inputUrl, owner: parsed.owner, repo: parsed.repo });
+      onChange?.({ url: inputUrl, owner: parsed.owner, repo: parsed.repo }); // Вызываем onChange только если он есть
     } else {
       setError('Не удалось загрузить репозиторий. Проверьте ссылку.');
       setData(null);
@@ -78,7 +79,7 @@ export const GithubBlock = ({ content, onChange }: { content: any, onChange: (da
   const renderGithubUI = () => {
     if (!data) return null;
     return (
-      <div style={{ border: '1px solid #d0d7de', borderRadius: '6px', background: '#ffffff', overflow: 'hidden', width: '100%', marginTop: '20px' }}>
+      <div style={{ border: '1px solid #d0d7de', borderRadius: '6px', background: '#ffffff', overflow: 'hidden', width: '100%', marginTop: readOnly ? '0' : '20px' }}>
         
         {/* Вкладки навигации */}
         <div style={{ display: 'flex', gap: '24px', padding: '14px 20px 0 20px', background: '#f6f8fa', borderBottom: '1px solid #d0d7de', fontSize: '13px' }}>
@@ -115,7 +116,6 @@ export const GithubBlock = ({ content, onChange }: { content: any, onChange: (da
 
             <div style={{ border: '1px solid #d0d7de', borderRadius: '6px', overflow: 'hidden' }}>
               
-              {/* Последний коммит (Шапка) */}
               {data.latestCommit && (
                 <div style={{ background: '#f6f8fa', padding: '10px 12px', borderBottom: '1px solid #d0d7de', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', gap: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
@@ -130,32 +130,23 @@ export const GithubBlock = ({ content, onChange }: { content: any, onChange: (da
                 </div>
               )}
               
-              {/* Строки файлов */}
               {data.contents.map((item, idx) => (
                 <div key={item.path} style={{ display: 'flex', padding: '8px 12px', borderBottom: idx !== data.contents.length - 1 ? '1px solid #d0d7de' : 'none', alignItems: 'center', fontSize: '13px' }}>
                   <a href={`https://github.com/${data.repo.owner.login}/${data.repo.name}/tree/HEAD/${item.path}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', width: '100%', textDecoration: 'none', color: '#24292f', gap: '12px' }}>
-                    
-                    {/* Название файла (берет столько места сколько нужно, до 60%) */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '0 1 auto', maxWidth: '60%', minWidth: 0 }}>
                       <img src={item.type === 'dir' ? iconFolder : iconFile} alt="icon" style={{ width: 14, height: 14, flexShrink: 0 }} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
                     </div>
-                    
-                    {/* Сообщение коммита (занимает остаток) */}
                     <div style={{ flex: 1, color: '#57606a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>
                       {item.commitMessage || ''}
                     </div>
-
-                    {/* Дата */}
                     <div style={{ color: '#57606a', whiteSpace: 'nowrap', flexShrink: 0, textAlign: 'right', width: '80px' }}>
                       {formatDate(item.commitDate)}
                     </div>
-
                   </a>
                 </div>
               ))}
 
-              {/* Кликабельное многоточие, если элементов 10 и больше */}
               {data.contents.length >= 10 && (
                 <a href={data.repo.html_url} target="_blank" rel="noreferrer" style={{ display: 'block', padding: '4px 12px', background: '#f9fafb', textAlign: 'center', textDecoration: 'none', color: '#57606a', fontSize: '14px', fontWeight: 600, borderTop: '1px solid #d0d7de' }}>
                   ...
@@ -219,26 +210,30 @@ export const GithubBlock = ({ content, onChange }: { content: any, onChange: (da
   return (
     <div style={{ width: '100%', boxSizing: 'border-box', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
       
-      <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 16px 0', color: '#111827' }}>Мой OpenSource вклад</h2>
+      {!readOnly && <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 16px 0', color: '#111827' }}>Мой OpenSource вклад</h2>}
       
-      <div style={{ display: 'flex', gap: '12px' }}>
-        <input 
-          type="text" 
-          placeholder="https://github.com/facebook/react" 
-          value={inputUrl}
-          onChange={(e) => setInputUrl(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleLoad()}
-          style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db', outline: 'none', fontSize: '13px', background: '#ffffff', color: '#111827' }}
-        />
-        <button 
-          onClick={handleLoad} 
-          disabled={loading}
-          style={{ background: '#1f2937', color: '#ffffff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}
-        >
-          {loading ? 'Синхронизация...' : 'Синхронизировать'}
-        </button>
-      </div>
-      {error && <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '8px' }}>{error}</div>}
+      {/* Прячем поле ввода в режиме readOnly */}
+      {!readOnly && (
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <input 
+            type="text" 
+            placeholder="https://github.com/facebook/react" 
+            value={inputUrl}
+            onChange={(e) => setInputUrl(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLoad()}
+            style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db', outline: 'none', fontSize: '13px', background: '#ffffff', color: '#111827' }}
+          />
+          <button 
+            onClick={handleLoad} 
+            disabled={loading}
+            style={{ background: '#1f2937', color: '#ffffff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}
+          >
+            {loading ? 'Синхронизация...' : 'Синхронизировать'}
+          </button>
+        </div>
+      )}
+
+      {error && !readOnly && <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '8px' }}>{error}</div>}
 
       {renderGithubUI()}
     </div>
