@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { savePortfolioDraft } from "../../api/api";
 import './Editor.css'
 import logo from '../../assets/logo.svg'
+import { GithubBlock } from '../../components/blocks/GithubBlock';
+import { CustomBlock } from '../../components/blocks/CustomBlock';
 
 interface BlockType {
   name: string
@@ -10,7 +12,7 @@ interface BlockType {
   bg: string
   square: string
   type: string
-  content?: any // Добавили content, чтобы TypeScript не ругался
+  content?: any
 }
 
 interface Project {
@@ -47,11 +49,11 @@ interface FooterData {
 const ProjectsBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
   const [projects, setProjects] = useState<Project[]>(content?.projects || [])
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const isAuth = localStorage.getItem('isLoggedIn') === 'true';
-    setIsLoggedIn(isAuth && !!token);
-  }, []);
+  // useEffect(() => {
+  //   const token = localStorage.getItem('accessToken');
+  //   const isAuth = localStorage.getItem('isLoggedIn') === 'true';
+  //   setIsLoggedIn(isAuth && !!token);
+  // }, []);
 
   const addProject = () => {
     setProjects([...projects, { id: Date.now(), title: '', link: '', desc: '' }])
@@ -349,7 +351,9 @@ const Editor = () => {
     { name: 'Навыки', desc: 'Технологии', bg: '#CFFAFE', square: '#06B6D4', type: 'skills' },
     { name: 'История опыта', desc: 'Карьера', bg: '#FFEDD5', square: '#F97316', type: 'experience' },
     { name: 'Отзывы', desc: 'Рекомендации', bg: '#FCE7F3', square: '#EC489A', type: 'reviews' },
-    { name: 'Подвал', desc: 'Контакты', bg: '#E5E7EB', square: '#6B7280', type: 'footer' }
+    { name: 'Подвал', desc: 'Контакты', bg: '#E5E7EB', square: '#6B7280', type: 'footer' },
+    { name: 'Интеграция GitHub', desc: 'Репозиторий', bg: '#E0F2FE', square: '#0EA5E9', type: 'github' },
+    { name: 'Свой блок', desc: 'Свободный текст', bg: '#F3F4F6', square: '#9CA3AF', type: 'custom' }
   ]
 
   const updateBlockContent = (index: number, newContent: any) => {
@@ -360,13 +364,11 @@ const Editor = () => {
 
   const handleSave = async () => {
     try {
-      // Отправляем данные на сервер
       const response = await savePortfolioDraft({
         title: "Моё крутое портфолио",
         sections: droppedBlocks
       });
       
-      // ✅ ИСПРАВЛЕНО: Теперь проверяем наличие SLUG и используем его для генерации URL
       if (response && response.slug) {
         const viewUrl = `${window.location.origin}/view/${response.slug}`;
         
@@ -467,6 +469,8 @@ const Editor = () => {
       if (block.type === 'experience') return <ExperienceBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'reviews') return <ReviewsBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'footer') return <FooterBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
+      if (block.type === 'github') return <GithubBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
+      if (block.type === 'custom') return <CustomBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
     }
 
     // Возврат для свернутых блоков (в сайдбаре или при перетаскивании)
@@ -620,9 +624,12 @@ const Editor = () => {
                       ${block.type === 'skills' ? 'skills-card-full' : ''}
                       ${block.type === 'experience' ? 'experience-card-full' : ''}
                       ${block.type === 'reviews' ? 'reviews-card-full' : ''}
-                      ${block.type === 'footer' ? 'footer-card-full' : ''}`}
-                    style={!['nav', 'main', 'about', 'projects', 'skills', 'experience', 'reviews', 'footer'].includes(block.type) ? { backgroundColor: block.bg } : {}}
+                      ${block.type === 'footer' ? 'footer-card-full' : ''}
+                      ${block.type === 'github' ? 'github-card-full' : ''}
+                      ${block.type === 'custom' ? 'custom-card-full' : ''}`}
+                    style={!['nav', 'main', 'about', 'projects', 'skills', 'experience', 'reviews', 'footer', 'github', 'custom'].includes(block.type) ? { backgroundColor: block.bg } : {}}
                   >
+                    <div className="block-label-badge">{block.name}</div>
                     {/* ПЕРЕДАЕМ ИНДЕКС В ФУНКЦИЮ */}
                     {renderBlockContent(block, true, idx)}
                     <button className="remove-block-btn" onClick={() => removeBlock(block.type)} title="Удалить блок">✕</button>

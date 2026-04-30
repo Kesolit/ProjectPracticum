@@ -166,6 +166,8 @@
   border-right: 1px solid #e9ecef;
   padding: 24px 16px;
   height: 100%;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .sidebar h2 {
@@ -286,25 +288,76 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-bottom: 20px;
+  gap: 24px;
+  padding-bottom: 40px;
 }
 
 .dropped-card-wrapper {
   width: 100%;
 }
 
+/* ===== Обновленный дизайн карточки ===== */
 .dropped-card {
   display: flex;
   align-items: center;
   gap: 16px;
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  padding: 20px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 36px 24px 24px; 
   background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: none; 
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dropped-card:hover,
+.dropped-card:focus-within {
+  border-color: #bfdbfe; 
+}
+
+.block-label-badge {
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 5;
+  letter-spacing: 0.3px;
+}
+
+.remove-block-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: #6b7280;
+  opacity: 0;
+  z-index: 10;
+}
+
+.dropped-card:hover .remove-block-btn {
+  opacity: 1;
+}
+
+.remove-block-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .dropped-card:hover {
@@ -1152,7 +1205,7 @@
   font-weight: 400;
 }
 
-/* Контейнер для ссылок (GitHub, LinkedIn, Telegram) */
+/* ===== Контейнер для ссылок (GitHub, LinkedIn, Telegram) ===== */
 .footer-social-row {
   display: flex;
   align-items: center;
@@ -1162,7 +1215,7 @@
   margin-top: 4px;
 }
 
-/* Инпуты для соцсетей */
+/* ===== Инпуты для соцсетей ===== */
 .footer-social-input {
   border: 1px solid transparent;
   background: #F3F4F6;
