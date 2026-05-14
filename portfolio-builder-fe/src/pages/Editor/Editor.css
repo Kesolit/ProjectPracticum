@@ -296,7 +296,6 @@
   width: 100%;
 }
 
-/* ===== Обновленный дизайн карточки ===== */
 .dropped-card {
   display: flex;
   align-items: center;
@@ -329,6 +328,118 @@
   font-weight: 600;
   z-index: 5;
   letter-spacing: 0.3px;
+}
+
+/* Базовые стили для обертки иконки в сайдбаре */
+.block-card-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.sidebar-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* 1. Определяем цвета для каждого типа блока через переменные */
+.sidebar-item-main       { --bg-color: #EFF6FF; --accent-color: #3B82F6; --border-color: #3B82F6;}
+.sidebar-item-nav        { --bg-color: #ECFEFF; --accent-color: #06B6D4; --border-color: #06B6D4;}
+.sidebar-item-about      { --bg-color: #FAF5FF; --accent-color: #A855F7; --border-color: #A855F7;}
+.sidebar-item-skills     { --bg-color: #ECFDF5; --accent-color: #10B981; --border-color: #10B981;}
+.sidebar-item-projects   { --bg-color: #FFF7ED; --accent-color: #F97316; --border-color: #F97316;}
+.sidebar-item-experience { --bg-color: #FFF1F2; --accent-color: #F43F5E; --border-color: #F43F5E;}
+.sidebar-item-footer     { --bg-color: #F1F5F9; --accent-color: #64748B; --border-color: #64748B;}
+.sidebar-item-github     { --bg-color: #EEF2FF; --accent-color: #6366F1; --border-color: #6366F1;}
+.sidebar-item-custom     { --bg-color: #FDF4FF; --accent-color: #D946EF; --border-color: #D946EF;}
+
+.sidebar-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  transition: all 0.2s ease;
+}
+
+.block-card:active .sidebar-icon-img,
+.drag-cursor-block .sidebar-icon-img {
+  filter: brightness(0) invert(1);
+}
+
+/* 3. СОСТОЯНИЕ ПРИ НАЖАТИИ (Swap) */
+/* Когда мы кликаем на блок в сайдбаре ИЛИ когда блок находится под курсором при перетаскивании */
+.block-card:active .block-card-icon-wrapper,
+.drag-cursor-block .block-card-icon-wrapper {
+  background-color: var(--accent-color) !important; /* Фон становится ярким */
+}
+
+.block-card:active,
+.drag-cursor-block {
+  /* Создаем полупрозрачную тень цвета обводки (accent) */
+  box-shadow: 0 4px 8px -4px var(--accent-color);
+  border-color: var(--accent-color) !important;
+  cursor: grabbing;
+}
+
+.block-card:active .block-card-drag-handle img,
+.drag-cursor-block .block-card-drag-handle img {
+  background-color: var(--accent-color) !important;
+  -webkit-mask: url('../../assets/icons/points.svg') no-repeat center / contain;
+  mask: url('../../assets/icons/points.svg') no-repeat center / contain;
+  
+  object-position: -9999px; 
+  opacity: 1;
+}
+
+/* Настройка цветов для каждого типа блока */
+
+/* Главный блок */
+.sidebar-item-main .block-card-icon-wrapper {
+  background-color: #EFF6FF;
+}
+
+/* Навигация */
+.sidebar-item-nav .block-card-icon-wrapper {
+  background-color: #ECFEFF;
+}
+
+/* Обо мне */
+.sidebar-item-about .block-card-icon-wrapper {
+  background-color: #FAF5FF;
+}
+
+/* Навыки */
+.sidebar-item-skills .block-card-icon-wrapper {
+  background-color: #ECFDF5;
+}
+
+/* Галерея проектов (кейсы) */
+.sidebar-item-projects .block-card-icon-wrapper {
+  background-color: #FFF7ED;
+}
+
+/* История опыта (карьера) */
+.sidebar-item-experience .block-card-icon-wrapper {
+  background-color: #FFF1F2;
+}
+
+/* Подвал */
+.sidebar-item-footer .block-card-icon-wrapper {
+  background-color: #F1F5F9;
+}
+
+/* Гитхаб */
+.sidebar-item-github .block-card-icon-wrapper {
+  background-color: #EEF2FF;
+}
+
+/* Кастомный (свободный) блок */
+.sidebar-item-custom .block-card-icon-wrapper {
+  background-color: #FDF4FF;
 }
 
 .remove-block-btn {

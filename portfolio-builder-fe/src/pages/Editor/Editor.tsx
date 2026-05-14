@@ -7,12 +7,23 @@ import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
 import SaveSuccessModal from '../../components/SaveSuccessModal/SaveSuccessModal';
 
+// Импорты иконок
+import mainIcon from '../../assets/icons/main.svg'
+import navIcon from '../../assets/icons/navigation.svg'
+import aboutIcon from '../../assets/icons/about.svg'
+import skillsIcon from '../../assets/icons/skills.svg'
+import caseIcon from '../../assets/icons/case.svg'
+import careerIcon from '../../assets/icons/career.svg'
+import footerIcon from '../../assets/icons/footer.svg'
+import githubIcon from '../../assets/icons/github.svg'
+import customIcon from '../../assets/icons/custom.svg'
+import pointsIcon from '../../assets/icons/points.svg'
+
 interface BlockType {
   name: string
   desc: string
-  bg: string
-  square: string
   type: string
+  icon: string // Теперь здесь путь к SVG
   content?: any
 }
 
@@ -31,13 +42,6 @@ interface Experience {
   desc: string
 }
 
-interface Review {
-  id: number
-  text: string
-  author: string
-  position: string
-}
-
 interface FooterData {
   name: string;
   github: string;
@@ -49,6 +53,10 @@ interface FooterData {
 
 const ProjectsBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
   const [projects, setProjects] = useState<Project[]>(content?.projects || [])
+
+  useEffect(() => {
+    onChange({ projects });
+  }, [projects]);
 
   const addProject = () => {
     setProjects([...projects, { id: Date.now(), title: '', link: '', desc: '' }])
@@ -227,70 +235,6 @@ const ExperienceBlock = ({ content, onChange }: { content: any, onChange: (data:
   )
 }
 
-const ReviewsBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
-  const [reviews, setReviews] = useState<Review[]>(content?.reviews || [
-    { id: 1, text: '', author: '', position: '' }
-  ])
-
-  useEffect(() => {
-    onChange({ reviews });
-  }, [reviews]);
-
-  const addReview = () => {
-    setReviews([...reviews, { id: Date.now(), text: '', author: '', position: '' }])
-  }
-
-  const updateReview = (id: number, field: keyof Review, value: string) => {
-    setReviews(reviews.map(rev => rev.id === id ? { ...rev, [field]: value } : rev))
-  }
-
-  const removeReview = (id: number) => {
-    setReviews(reviews.filter(rev => rev.id !== id))
-  }
-
-  return (
-    <div className="reviews-container-unfolded">
-      <h2 className="reviews-main-title">Отзывы</h2>
-      <div className="reviews-stack">
-        {reviews.map((rev) => (
-          <div key={rev.id} className="review-card-item fade-in">
-            <button className="review-card-remove" onClick={() => removeReview(rev.id)}>✕</button>
-            <textarea 
-              className="review-input-text" 
-              placeholder="Текст отзыва рекомендателя..." 
-              value={rev.text}
-              onChange={(e) => updateReview(rev.id, 'text', e.target.value)}
-              rows={1}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = `${target.scrollHeight}px`;
-              }}
-            />
-            <div className="review-author-box">
-              <input 
-                className="review-input-name" 
-                placeholder="Имя Фамилия" 
-                value={rev.author}
-                onChange={(e) => updateReview(rev.id, 'author', e.target.value)}
-              />
-              <input 
-                className="review-input-pos" 
-                placeholder="Должность" 
-                value={rev.position}
-                onChange={(e) => updateReview(rev.id, 'position', e.target.value)}
-              />
-            </div>
-          </div>
-        ))}
-        <button className="add-review-action-btn" onClick={addReview}>
-          <span className="plus-circle">+</span> Добавить отзыв
-        </button>
-      </div>
-    </div>
-  )
-}
-
 const FooterBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
   const [footerData, setFooterData] = useState<FooterData>(content || {
     name: '', github: '', linkedin: '', telegram: ''
@@ -339,46 +283,41 @@ const Editor = () => {
   const [currentUrl, setCurrentUrl] = useState('');
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
   
-  
   const navigate = useNavigate()
 
+  // Список доступных блоков (БЕЗ ОТЗЫВОВ)
   const blocks: BlockType[] = [
-    { name: 'Главный блок', desc: 'Хедер и приветствие', bg: '#DBEAFE', square: '#3B82F6', type: 'main' },
-    { name: 'Навигация', desc: 'Верхнее меню', bg: '#F3E8FF', square: '#8B5CF6', type: 'nav' },
-    { name: 'Обо мне', desc: 'Биография', bg: '#DCFCE7', square: '#10B981', type: 'about' },
-    { name: 'Галерея проектов', desc: 'Кейсы', bg: '#FEF9C3', square: '#EAB308', type: 'projects' },
-    { name: 'Навыки', desc: 'Технологии', bg: '#CFFAFE', square: '#06B6D4', type: 'skills' },
-    { name: 'История опыта', desc: 'Карьера', bg: '#FFEDD5', square: '#F97316', type: 'experience' },
-    { name: 'Отзывы', desc: 'Рекомендации', bg: '#FCE7F3', square: '#EC489A', type: 'reviews' },
-    { name: 'Подвал', desc: 'Контакты', bg: '#E5E7EB', square: '#6B7280', type: 'footer' },
-    { name: 'Интеграция GitHub', desc: 'Репозиторий', bg: '#E0F2FE', square: '#0EA5E9', type: 'github' },
-    { name: 'Кастомный блок ', desc: 'Свободное содержимое', bg: '#F3F4F6', square: '#9CA3AF', type: 'custom' }
+    { name: 'Главный блок', desc: 'Хедер и приветствие', type: 'main', icon: mainIcon },
+    { name: 'Навигация', desc: 'Верхнее меню', type: 'nav', icon: navIcon },
+    { name: 'Обо мне', desc: 'Биография', type: 'about', icon: aboutIcon },
+    { name: 'Навыки', desc: 'Технологии', type: 'skills', icon: skillsIcon },
+    { name: 'Галерея проектов', desc: 'Кейсы', type: 'projects', icon: caseIcon },
+    { name: 'История опыта', desc: 'Карьера', type: 'experience', icon: careerIcon },
+    { name: 'Подвал', desc: 'Контакты', type: 'footer', icon: footerIcon },
+    { name: 'Интеграция GitHub', desc: 'Репозиторий', type: 'github', icon: githubIcon },
+    { name: 'Кастомный блок', desc: 'Свободное содержимое', type: 'custom', icon: customIcon }
   ]
 
   const handleSortStart = (index: number) => {
-  setDraggedItemIndex(index);
-};
+    setDraggedItemIndex(index);
+  };
 
-const handleSortOver = (e: React.DragEvent, index: number) => {
-  e.preventDefault();
-  
-  // Если мы тащим новый блок из сайдбара или над самим собой — ничего не делаем
-  if (draggedItemIndex === null || draggedItemIndex === index) return;
+  const handleSortOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedItemIndex === null || draggedItemIndex === index) return;
 
-  const newBlocks = [...droppedBlocks];
-  const draggedItem = newBlocks[draggedItemIndex];
-  
-  // Удаляем элемент с его старого места и вставляем на новое
-  newBlocks.splice(draggedItemIndex, 1);
-  newBlocks.splice(index, 0, draggedItem);
-  
-  setDraggedItemIndex(index); // Обновляем индекс, так как элемент переместился
-  setDroppedBlocks(newBlocks);
-};
+    const newBlocks = [...droppedBlocks];
+    const draggedItem = newBlocks[draggedItemIndex];
+    newBlocks.splice(draggedItemIndex, 1);
+    newBlocks.splice(index, 0, draggedItem);
+    
+    setDraggedItemIndex(index);
+    setDroppedBlocks(newBlocks);
+  };
 
-const handleSortEnd = () => {
-  setDraggedItemIndex(null);
-};
+  const handleSortEnd = () => {
+    setDraggedItemIndex(null);
+  };
 
   const updateBlockContent = (index: number, newContent: any) => {
     setDroppedBlocks(prev => prev.map((block, i) => 
@@ -386,28 +325,24 @@ const handleSortEnd = () => {
     ));
   };
 
-const handleSave = async () => {
-  try {
-    const response = await savePortfolioDraft({
-      title: "Моё крутое портфолио",
-      sections: droppedBlocks
-    });
-    
-    if (response && response.slug) {
-      // Формируем полную ссылку
-      const viewUrl = `${window.location.origin}/view/${response.slug}`;
+  const handleSave = async () => {
+    try {
+      const response = await savePortfolioDraft({
+        title: "Моё крутое портфолио",
+        sections: droppedBlocks
+      });
       
-      // Обновляем состояния для модалки
-      setCurrentUrl(viewUrl);
-      setIsModalOpen(true);
-    } else {
-      alert('Сохранено, но сервер не вернул ссылку (slug).');
+      if (response && response.slug) {
+        const viewUrl = `${window.location.origin}/view/${response.slug}`;
+        setCurrentUrl(viewUrl);
+        setIsModalOpen(true);
+      } else {
+        alert('Сохранено, но сервер не вернул ссылку.');
+      }
+    } catch (err: any) {
+      alert('Ошибка при сохранении: ' + err.message);
     }
-    
-  } catch (err: any) {
-    alert('Ошибка при сохранении: ' + err.message);
-  }
-};
+  };
 
   useEffect(() => {
     const checkAuth = () => {
@@ -415,16 +350,15 @@ const handleSave = async () => {
       const isAuth = localStorage.getItem('isLoggedIn') === 'true';
       setIsLoggedIn(!!isAuth && !!token);
     };
-
     checkAuth();
-    // Слушаем изменения в localStorage (помогает, если вход был в другой вкладке)
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
   }, [])
 
+  // Функция рендера контента (сайдбар vs рабочая область)
   const renderBlockContent = (block: BlockType, isExpanded: boolean, index?: number) => {
+    // 1. РЕНДЕР РАЗВЕРНУТОГО БЛОКА В КАНВАСЕ
     if (isExpanded && index !== undefined) {
-      
       if (block.type === 'nav') {
         return (
           <div className="nav-layout-unfolded">
@@ -484,7 +418,7 @@ const handleSave = async () => {
             <h2 className="about-title">Обо мне</h2>
             <textarea
               className="about-input-field"
-              placeholder="Напишите здесь подробную информацию о вашем пути в IT, образовании и увлечениях..."
+              placeholder="Напишите здесь подробную информацию о вашем пути в IT..."
               value={block.content?.text || ''}
               onChange={(e) => updateBlockContent(index, { text: e.target.value })}
               onInput={(e) => {
@@ -500,15 +434,20 @@ const handleSave = async () => {
       if (block.type === 'projects') return <ProjectsBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'skills') return <SkillsBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'experience') return <ExperienceBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
-      if (block.type === 'reviews') return <ReviewsBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'footer') return <FooterBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'github') return <GithubBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'custom') return <CustomBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
     }
 
+    // 2. РЕНДЕР КАРТОЧКИ В САЙДБАРЕ (С ИКОНКАМИ)
     return (
       <>
-        <div className="block-color-square" style={{ backgroundColor: block.square }}></div>
+        <div className="block-card-drag-handle">
+          <img src={pointsIcon} alt="drag handle" />
+        </div>
+        <div className="block-card-icon-wrapper">
+          <img src={block.icon} alt={block.name} className="sidebar-icon-img" />
+        </div>
         <div className="block-text">
           <strong>{block.name}</strong>
           <small>{block.desc}</small>
@@ -520,12 +459,7 @@ const handleSave = async () => {
   const handleLogoClick = () => navigate('/')
   
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('jwt_token');
+    localStorage.clear();
     setIsLoggedIn(false);
     navigate('/login');
   };
@@ -557,12 +491,10 @@ const handleSave = async () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    // Если мы просто сортировали блоки внутри, выходим
     if (draggedItemIndex !== null) {
       setDraggedItemIndex(null);
       return;
     }
-
     const blockData = e.dataTransfer.getData('block');
     if (blockData) {
       const block: BlockType = JSON.parse(blockData)
@@ -584,9 +516,7 @@ const handleSave = async () => {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        setDragPosition({ x: e.clientX, y: e.clientY })
-      }
+      if (isDragging) setDragPosition({ x: e.clientX, y: e.clientY })
     }
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
@@ -604,15 +534,10 @@ const handleSave = async () => {
           <button className="header-btn"><span className="icon">⬇</span> Экспорт</button>
           <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
           
-          {/* ОБНОВЛЕННЫЙ УСЛОВНЫЙ РЕНДЕРИНГ ПРОФИЛЯ */}
           {isLoggedIn ? (
             <div className="profile-wrapper" onClick={handleLogout}>
               <div className="profile-avatar-container">
-                <img 
-                  src="https://via.placeholder.com/40" // Сюда можно подставить фото из localStorage
-                  alt="User" 
-                  className="profile-avatar"
-                />
+                <img src="https://via.placeholder.com/40" alt="User" className="profile-avatar" />
                 <div className="logout-overlay">Выйти</div>
               </div>
             </div>
@@ -633,8 +558,7 @@ const handleSave = async () => {
             {blocks.map((block, idx) => (
               <div
                 key={idx}
-                className="block-card draggable"
-                style={{ backgroundColor: block.bg }}
+                className={`block-card draggable sidebar-item-${block.type}`}
                 draggable
                 onDragStart={(e) => handleDragStart(e, block)}
                 onDrag={handleDrag}
@@ -650,9 +574,14 @@ const handleSave = async () => {
           {droppedBlocks.length === 0 ? (
             <div className="empty-state">
               <h3>Начните создавать свое портфолио</h3>
-              <p>Перетащите компоненты из левой боковой панели, чтобы создать идеальное портфолио разработчика.</p>
               <div className="tip">Совет: Начните с Главного блока, чтобы представиться.</div>
-              <div className="placeholder">Перетащите элементы сюда — Ваше портфолио появится здесь</div>
+              <p>Перетащите компоненты из левой боковой панели, чтобы создать 
+идеальное портфолио разработчика. Меняйте их порядок по своему 
+усмотрению!</p>
+              <div className="placeholder">
+                Перетащите элементы сюда.
+                Ваше портфолио появится здесь
+              </div>
             </div>
           ) : (
             <div className="dropped-blocks-container">
@@ -660,7 +589,7 @@ const handleSave = async () => {
                 <div 
                   key={`${block.type}-${idx}`} 
                   className="dropped-card-wrapper fade-in"
-                  draggable // Обязательно делаем блок перетаскиваемым
+                  draggable
                   onDragStart={() => handleSortStart(idx)}
                   onDragOver={(e) => handleSortOver(e, idx)}
                   onDragEnd={handleSortEnd}
@@ -673,20 +602,13 @@ const handleSave = async () => {
                       ${block.type === 'projects' ? 'projects-card-full' : ''}
                       ${block.type === 'skills' ? 'skills-card-full' : ''}
                       ${block.type === 'experience' ? 'experience-card-full' : ''}
-                      ${block.type === 'reviews' ? 'reviews-card-full' : ''}
                       ${block.type === 'footer' ? 'footer-card-full' : ''}
                       ${block.type === 'github' ? 'github-card-full' : ''}
                       ${block.type === 'custom' ? 'custom-card-full' : ''}`}
                   >
                     <div className="block-label-badge">{block.name}</div>
                     {renderBlockContent(block, true, idx)}
-                    <button 
-                      className="remove-block-btn" 
-                      onClick={() => removeBlock(block.type)} 
-                      title="Удалить блок"
-                    >
-                      ✕
-                    </button>
+                    <button className="remove-block-btn" onClick={() => removeBlock(block.type)}>✕</button>
                   </div>
                 </div>
               ))}
@@ -695,14 +617,21 @@ const handleSave = async () => {
         </main>
       </div>
 
-      <SaveSuccessModal 
-        isOpen={isModalOpen} 
-        publicUrl={currentUrl} 
-        onClose={() => setIsModalOpen(false)} 
-      />
+      <SaveSuccessModal isOpen={isModalOpen} publicUrl={currentUrl} onClose={() => setIsModalOpen(false)} />
 
       {isDragging && draggedBlock && (
-        <div className="drag-cursor-block" /* ... */ >
+        <div 
+          className={`drag-cursor-block sidebar-item-${draggedBlock.type}`} 
+          style={{ 
+            left: dragPosition.x, 
+            top: dragPosition.y,
+            position: 'fixed',
+            pointerEvents: 'none',
+            transform: 'translate(-50%, -50%)', // Центрируем блок под курсором
+            zIndex: 1000
+          }}
+        >
+          {/* Вторым аргументом передаем false, так как это вид для сайдбара/перетаскивания */}
           {renderBlockContent(draggedBlock, false)}
         </div>
       )}

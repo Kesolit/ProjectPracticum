@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react'
 import './Register.css'
 import { registerUser } from '../../api/api'
+import { 
+  validateEmail, 
+  validatePassword, 
+  validateName, 
+  validatePhone, 
+  validateConfirmPassword 
+} from '../../utils/validation'
 
 // Импорты SVG-файлов
 import logo from '../../assets/logo.svg'
@@ -19,8 +26,16 @@ const Register = () => {
   const [agree, setAgree] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [errors, setErrors] = useState({
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  password: '',
+  confirmPassword: ''
+});
+const [serverError, setServerError] = useState('');
 
-  // Принудительный сброс формы при загрузке страницы
   useEffect(() => {
     setFormData({
       firstName: '',
@@ -29,33 +44,60 @@ const Register = () => {
       phone: '',
       password: '',
       confirmPassword: ''
-    })
-    setAgree(false)
-  }, [])
+    });
+    setAgree(false);
+    setErrors({ // Очищаем объект ошибок
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      password: '',
+      confirmPassword: ''
+    });
+    setServerError('');
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-
+    const { name, value } = e.target;
+    
+    let cleanValue = value;
     if (name === 'phone') {
-      const cleanValue = value.replace(/[^\d+]/g, '')
-      if (cleanValue.length <= 15) {
-        setFormData({ ...formData, [name]: cleanValue })
-      }
-    } else {
-      setFormData({ ...formData, [name]: value })
+      cleanValue = value.replace(/[^\d+]/g, '');
+      if (cleanValue.length > 15) return;
     }
-  }
+
+    setFormData({ ...formData, [name]: cleanValue });
+    setErrors({ ...errors, [name]: '' });
+    setServerError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.password !== formData.confirmPassword) {
-      alert('Пароли не совпадают');
+    const newErrors = {
+      firstName: validateName(formData.firstName, "Имя"),
+      lastName: validateName(formData.lastName, "Фамилия"),
+      email: validateEmail(formData.email),
+      phone: validatePhone(formData.phone),
+      password: validatePassword(formData.password),
+      confirmPassword: validateConfirmPassword(formData.password, formData.confirmPassword)
+    };
+
+    const hasErrors = Object.values(newErrors).some(error => error !== null);
+
+    if (hasErrors) {
+      setErrors({
+        firstName: newErrors.firstName || '',
+        lastName: newErrors.lastName || '',
+        email: newErrors.email || '',
+        phone: newErrors.phone || '',
+        password: newErrors.password || '',
+        confirmPassword: newErrors.confirmPassword || ''
+      });
       return;
     }
 
     try {
-      // Отправляем данные на ваш бэкенд
       const result = await registerUser({
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -63,15 +105,9 @@ const Register = () => {
         phone: formData.phone,
         password: formData.password,
       });
-
-      console.log('Регистрация успешна:', result);
-      
-      // Перенаправляем на страницу входа или дашборд
       window.location.href = '/login';
-      
     } catch (error: any) {
-      console.error('Ошибка регистрации:', error);
-      alert(error.message || 'Не удалось зарегистрироваться');
+      setServerError(error.message || 'Не удалось зарегистрироваться');
     }
   };
 
@@ -107,25 +143,26 @@ const Register = () => {
                 <input
                   type="text"
                   name="firstName"
+                  className={errors.firstName ? "input-error" : ""}
                   placeholder=" " 
                   value={formData.firstName}
                   onChange={handleChange}
-                  autoComplete="off"
-                  required
                 />
                 <label>Имя</label>
+                {errors.firstName && <span className="error-message-text">{errors.firstName}</span>}
               </div>
+              
               <div className="form-group">
                 <input
                   type="text"
                   name="lastName"
+                  className={errors.lastName ? "input-error" : ""}
                   placeholder=" "
                   value={formData.lastName}
                   onChange={handleChange}
-                  autoComplete="off"
-                  required
                 />
                 <label>Фамилия</label>
+                {errors.lastName && <span className="error-message-text">{errors.lastName}</span>}
               </div>
             </div>
 
@@ -134,25 +171,27 @@ const Register = () => {
                 <input
                   type="email"
                   name="email"
+                  className={errors.email ? "input-error" : ""} // Добавили класс
                   placeholder=" "
                   value={formData.email}
                   onChange={handleChange}
                   autoComplete="off"
-                  required
                 />
                 <label>Почта</label>
+                {errors.email && <span className="error-message-text">{errors.email}</span>} {/* Добавили текст */}
               </div>
               <div className="form-group">
                 <input
                   type="tel"
                   name="phone"
+                  className={errors.phone ? "input-error" : ""} // Добавили класс
                   placeholder=" "
                   value={formData.phone}
                   onChange={handleChange}
                   autoComplete="off"
-                  required
                 />
                 <label>Номер телефона</label>
+                {errors.phone && <span className="error-message-text">{errors.phone}</span>} {/* Добавили текст */}
               </div>
             </div>
 
@@ -160,46 +199,34 @@ const Register = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
+                className={errors.password ? "input-error" : ""} // Добавили класс
                 placeholder=" "
                 value={formData.password}
                 onChange={handleChange}
                 autoComplete="new-password"
-                required
               />
               <label>Пароль</label>
-              <button 
-                type="button" 
-                className="eye-btn" 
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                <img 
-                  src={showPassword ? eyeOn : eyeOff} 
-                  alt="Toggle password visibility" 
-                />
+              <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)}>
+                <img src={showPassword ? eyeOn : eyeOff} alt="Toggle visibility" />
               </button>
+              {errors.password && <span className="error-message-text">{errors.password}</span>} {/* Добавили текст */}
             </div>
 
             <div className="form-group full-width">
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
+                className={errors.confirmPassword ? "input-error" : ""} // Добавили класс
                 placeholder=" "
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 autoComplete="new-password"
-                required
               />
               <label>Повторите пароль</label>
-              <button 
-                type="button" 
-                className="eye-btn" 
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                <img 
-                  src={showConfirmPassword ? eyeOn : eyeOff} 
-                  alt="Toggle password visibility" 
-                />
+              <button type="button" className="eye-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                <img src={showConfirmPassword ? eyeOn : eyeOff} alt="Toggle visibility" />
               </button>
+              {errors.confirmPassword && <span className="error-message-text">{errors.confirmPassword}</span>} {/* Добавили текст */}
             </div>
 
             <div className="checkbox-group">
@@ -208,13 +235,13 @@ const Register = () => {
                 id="agree"
                 checked={agree}
                 onChange={(e) => setAgree(e.target.checked)}
-                required
               />
               <label htmlFor="agree">
                 Я согласен с <a href="#">Условиями пользования</a> и <a href="#">Политикой конфиденциальности</a>
               </label>
             </div>
 
+            {serverError && <div className="register-server-error">{serverError}</div>}
             <button type="submit" className="register-btn" disabled={!agree}>
               Создать аккаунт
             </button>
