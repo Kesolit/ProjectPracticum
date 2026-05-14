@@ -109,7 +109,6 @@ form {
 
 .form-group.full-width {
   width: 640px;
-  margin-bottom: 20px;
 }
 
 /* Плавающий Label */
@@ -271,6 +270,38 @@ form {
   background: #eef2ff;
 }
 
+/* Подсветка */
+.form-group input.input-error {
+  border-color: #ff4d4f !important;
+}
+
+/* Текст ошибки */
+.error-message-text {
+  color: #ff4d4f;
+  font-size: 10px; /* Чуть меньше, так как поля в ряду узкие */
+  position: absolute;
+  bottom: -15px;
+  left: 0;
+}
+
+/* Контейнер для группы (чтобы ошибка позиционировалась относительно него) */
+.form-group {
+  position: relative;
+  margin-bottom: 25px; /* Увеличиваем отступ для текста ошибки */
+}
+
+/* Серверная ошибка */
+.register-server-error {
+  color: #ff4d4f;
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  text-align: center;
+}
+
 /* Адаптивность */
 @media (max-width: 1100px) {
   .register-container, .form-group.full-width, .register-btn, .social-login {
@@ -283,3 +314,4 @@ form {
   .left-block { display: none; }
   .register-content { justify-content: center; }
 }
+

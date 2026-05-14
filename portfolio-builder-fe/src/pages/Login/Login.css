@@ -260,6 +260,39 @@
   background: #eef2ff;
 }
 
+/* Подсветка инпута при ошибке */
+.login-form-group input.input-error {
+  border-color: #ff4d4f !important;
+}
+
+/* Стиль текста ошибки под инпутом */
+.error-message-text {
+  color: #ff4d4f;
+  font-size: 11px;
+  position: absolute;
+  bottom: -18px; /* Размещаем прямо под линией инпута */
+  left: 0;
+  font-weight: 500;
+}
+
+/* Ошибка сервера (общая) */
+.login-server-error {
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #ff4d4f;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Чтобы текст ошибки не перекрывался другими элементами */
+.login-form-group {
+  margin-bottom: 25px; /* Увеличили отступ, чтобы влез текст ошибки */
+  position: relative;
+}
+
 /* Адаптивность */
 @media (max-width: 1100px) {
   .login-container, .login-form-group.login-full-width, .login-btn, .login-social-section, .login-options-row {

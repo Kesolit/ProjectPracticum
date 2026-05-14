@@ -166,6 +166,8 @@
   border-right: 1px solid #e9ecef;
   padding: 24px 16px;
   height: 100%;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .sidebar h2 {
@@ -286,8 +288,8 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-bottom: 20px;
+  gap: 24px;
+  padding-bottom: 40px;
 }
 
 .dropped-card-wrapper {
@@ -298,13 +300,175 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  padding: 20px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 36px 24px 24px; 
   background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: none; 
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dropped-card:hover,
+.dropped-card:focus-within {
+  border-color: #bfdbfe; 
+}
+
+.block-label-badge {
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 5;
+  letter-spacing: 0.3px;
+}
+
+/* Базовые стили для обертки иконки в сайдбаре */
+.block-card-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.sidebar-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* 1. Определяем цвета для каждого типа блока через переменные */
+.sidebar-item-main       { --bg-color: #EFF6FF; --accent-color: #3B82F6; --border-color: #3B82F6;}
+.sidebar-item-nav        { --bg-color: #ECFEFF; --accent-color: #06B6D4; --border-color: #06B6D4;}
+.sidebar-item-about      { --bg-color: #FAF5FF; --accent-color: #A855F7; --border-color: #A855F7;}
+.sidebar-item-skills     { --bg-color: #ECFDF5; --accent-color: #10B981; --border-color: #10B981;}
+.sidebar-item-projects   { --bg-color: #FFF7ED; --accent-color: #F97316; --border-color: #F97316;}
+.sidebar-item-experience { --bg-color: #FFF1F2; --accent-color: #F43F5E; --border-color: #F43F5E;}
+.sidebar-item-footer     { --bg-color: #F1F5F9; --accent-color: #64748B; --border-color: #64748B;}
+.sidebar-item-github     { --bg-color: #EEF2FF; --accent-color: #6366F1; --border-color: #6366F1;}
+.sidebar-item-custom     { --bg-color: #FDF4FF; --accent-color: #D946EF; --border-color: #D946EF;}
+
+.sidebar-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  transition: all 0.2s ease;
+}
+
+.block-card:active .sidebar-icon-img,
+.drag-cursor-block .sidebar-icon-img {
+  filter: brightness(0) invert(1);
+}
+
+/* 3. СОСТОЯНИЕ ПРИ НАЖАТИИ (Swap) */
+/* Когда мы кликаем на блок в сайдбаре ИЛИ когда блок находится под курсором при перетаскивании */
+.block-card:active .block-card-icon-wrapper,
+.drag-cursor-block .block-card-icon-wrapper {
+  background-color: var(--accent-color) !important; /* Фон становится ярким */
+}
+
+.block-card:active,
+.drag-cursor-block {
+  /* Создаем полупрозрачную тень цвета обводки (accent) */
+  box-shadow: 0 4px 8px -4px var(--accent-color);
+  border-color: var(--accent-color) !important;
+  cursor: grabbing;
+}
+
+.block-card:active .block-card-drag-handle img,
+.drag-cursor-block .block-card-drag-handle img {
+  background-color: var(--accent-color) !important;
+  -webkit-mask: url('../../assets/icons/points.svg') no-repeat center / contain;
+  mask: url('../../assets/icons/points.svg') no-repeat center / contain;
+  
+  object-position: -9999px; 
+  opacity: 1;
+}
+
+/* Настройка цветов для каждого типа блока */
+
+/* Главный блок */
+.sidebar-item-main .block-card-icon-wrapper {
+  background-color: #EFF6FF;
+}
+
+/* Навигация */
+.sidebar-item-nav .block-card-icon-wrapper {
+  background-color: #ECFEFF;
+}
+
+/* Обо мне */
+.sidebar-item-about .block-card-icon-wrapper {
+  background-color: #FAF5FF;
+}
+
+/* Навыки */
+.sidebar-item-skills .block-card-icon-wrapper {
+  background-color: #ECFDF5;
+}
+
+/* Галерея проектов (кейсы) */
+.sidebar-item-projects .block-card-icon-wrapper {
+  background-color: #FFF7ED;
+}
+
+/* История опыта (карьера) */
+.sidebar-item-experience .block-card-icon-wrapper {
+  background-color: #FFF1F2;
+}
+
+/* Подвал */
+.sidebar-item-footer .block-card-icon-wrapper {
+  background-color: #F1F5F9;
+}
+
+/* Гитхаб */
+.sidebar-item-github .block-card-icon-wrapper {
+  background-color: #EEF2FF;
+}
+
+/* Кастомный (свободный) блок */
+.sidebar-item-custom .block-card-icon-wrapper {
+  background-color: #FDF4FF;
+}
+
+.remove-block-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: #6b7280;
+  opacity: 0;
+  z-index: 10;
+}
+
+.dropped-card:hover .remove-block-btn {
+  opacity: 1;
+}
+
+.remove-block-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .dropped-card:hover {
@@ -1152,7 +1316,7 @@
   font-weight: 400;
 }
 
-/* Контейнер для ссылок (GitHub, LinkedIn, Telegram) */
+/* ===== Контейнер для ссылок (GitHub, LinkedIn, Telegram) ===== */
 .footer-social-row {
   display: flex;
   align-items: center;
@@ -1162,7 +1326,7 @@
   margin-top: 4px;
 }
 
-/* Инпуты для соцсетей */
+/* ===== Инпуты для соцсетей ===== */
 .footer-social-input {
   border: 1px solid transparent;
   background: #F3F4F6;
@@ -1178,4 +1342,256 @@
 
 .footer-social-input::placeholder {
   color: #9CA3AF;
+}
+
+/* ===== Стили для Кастомного блока (Свободный холст) ===== */
+.custom-block-container {
+  width: 100%;
+  background: transparent;
+}
+
+.custom-toolbar {
+  display: flex;
+  flex-direction: column; /* Ставим элементы в колонку (кнопки сверху, текст снизу) */
+  gap: 12px;
+  padding: 16px 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px; /* Скругляем все углы */
+  background: #f9fafb; /* Тот самый серый фон */
+  margin-bottom: 16px; /* Визуально отлепляем от холста */
+}
+
+.custom-toolbar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.custom-toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  background: white;
+  border: 1.5px solid #d1d5db;
+  border-radius: 6px;
+  width: auto; 
+  height: 36px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 1;
+}
+
+.custom-toolbar-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.btn-icon {
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+
+.custom-toolbar-hint {
+  color: #9ca3af;
+  font-size: 13px;
+  /* Убрали боковую рамку и margin-left, так как текст теперь на новой строке */
+}
+
+.custom-canvas-area {
+  position: relative;
+  width: 100%;
+  min-height: 500px;
+  border: 1.5px dashed #d1d5db; /* Пунктирная рамка */
+  border-radius: 8px; /* Скругляем все углы */
+  background: #ffffff; /* Сам холст белый */
+  overflow: hidden;
+}
+
+.custom-draggable-item {
+  position: absolute;
+  border: 1px solid transparent;
+  cursor: grab;
+}
+
+.custom-draggable-item.active {
+  border-color: #3b82f6; 
+}
+
+.custom-draggable-item:active {
+  cursor: grabbing;
+}
+
+/* Белые кружочки по углам */
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  border: 1.5px solid #3b82f6;
+  border-radius: 50%;
+  display: none;
+  z-index: 5;
+}
+
+.custom-draggable-item.active .resize-handle {
+  display: block;
+}
+
+.resize-handle.nw { top: -6px; left: -6px; cursor: nwse-resize; }
+.resize-handle.ne { top: -6px; right: -6px; cursor: nesw-resize; }
+.resize-handle.sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+.resize-handle.se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
+/* Кнопка удаления (Красный крестик) */
+.custom-item-delete {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  border: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.custom-draggable-item.active .custom-item-delete {
+  opacity: 1;
+}
+
+/* Кнопочка (ручка) для перетаскивания текста */
+.custom-drag-handle {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 1.5px solid #3b82f6;
+  border-radius: 4px;
+  width: 24px;
+  height: 16px;
+  cursor: grab;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Контент */
+.custom-text-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  resize: none; 
+  outline: none;
+  font-family: inherit;
+  color: #111827;
+  padding: 8px;
+}
+
+.custom-text-input.title {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.custom-text-input.body {
+  font-size: 16px;
+  font-weight: 400;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.custom-image-item {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  display: block;
+}
+
+/* ===== Обновленные стили профиля с оверлеем "Выйти" ===== */
+.profile-avatar-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  transition: border-color 0.2s ease;
+}
+
+.profile-avatar-container:hover {
+  border-color: #515DEF;
+}
+
+/* Сама картинка аватарки */
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.2s ease;
+}
+
+.logout-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  opacity: 0; /* Невидимый изначально */
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.profile-avatar-container:hover .logout-overlay {
+  opacity: 1;
+}
+
+.profile-avatar-container:hover .profile-avatar {
+  opacity: 0.5;
+}
+.dropped-card-wrapper {
+  cursor: grab;
+  transition: transform 0.2s ease;
+}
+
+.dropped-card-wrapper:active {
+  cursor: grabbing;
+}
+
+/* Визуальный эффект при перетаскивании (опционально) */
+.dropped-card-wrapper[draggable="true"] {
+  opacity: 1;
 }
