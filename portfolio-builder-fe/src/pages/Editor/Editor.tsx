@@ -271,6 +271,7 @@ const FooterBlock = ({ content, onChange }: { content: any, onChange: (data: any
 };
 
 
+
 // --- ГЛАВНЫЙ КОМПОНЕНТ РЕДАКТОРА ---
 
 const Editor = () => {
@@ -319,12 +320,26 @@ const Editor = () => {
     setDraggedItemIndex(null);
   };
 
+    const handlePreview = () => {
+      // Сохраняем текущее состояние блоков во временное хранилище
+      const previewData = {
+        sections: droppedBlocks,
+        isPreview: true 
+      };
+      localStorage.setItem('portfolio_preview', JSON.stringify(previewData));
+      
+      // Открываем страницу предпросмотра в новой вкладке
+      window.open('/preview', '_blank');
+    };
+
   const updateBlockContent = (index: number, newContent: any) => {
     setDroppedBlocks(prev => prev.map((block, i) => 
       i === index ? { ...block, content: newContent } : block
     ));
   };
 
+  
+  
   const handleSave = async () => {
     try {
       const response = await savePortfolioDraft({
@@ -530,7 +545,7 @@ const Editor = () => {
           <span className="logo-text">dev/folio</span>
         </div>
         <div className="header-actions">
-          <button className="header-btn"><span className="icon">👁</span> Предпросмотр</button>
+          <button className="header-btn preview-btn" onClick={handlePreview}><span className="icon">👁</span> Предпросмотр</button>
           <button className="header-btn"><span className="icon">⬇</span> Экспорт</button>
           <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
           

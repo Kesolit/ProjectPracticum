@@ -4,6 +4,7 @@ import Register from './pages/Register/Register'
 import Login from './pages/Login/Login'
 import PublicView from './pages/PublicView/PublicView' 
 import Dashboard from './pages/Dashboard/Dashboard';
+import Preview from './pages/Preview/Preview';
 
 function App() {
   return (
@@ -13,6 +14,8 @@ function App() {
         
         <Route path="/dashboard" element={<Dashboard />} />
         
+        <Route path="/preview" element={<Preview />} />
+
         <Route path="/editor/:id" element={<Editor />} />
         
         <Route path="/register" element={<Register />} />
