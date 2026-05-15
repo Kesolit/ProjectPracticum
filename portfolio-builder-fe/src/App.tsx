@@ -2,9 +2,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Editor from './pages/Editor/Editor'
 import Register from './pages/Register/Register'
 import Login from './pages/Login/Login'
-import PublicView from './pages/PublicView/PublicView' 
-import Dashboard from './pages/Dashboard/Dashboard';
-import Preview from './pages/Preview/Preview';
+import PublicView from './pages/PublicView/PublicView'
+import Dashboard from './pages/Dashboard/Dashboard'
+import Preview from './pages/Preview/Preview'
 
 function App() {
   return (

@@ -22,20 +22,6 @@
 .login-logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.login-logo-icon {
-  width: 32px;
-  height: auto;
-  display: block;
-}
-
-.login-logo-text {
-  font-size: 22px;
-  font-weight: 700;
-  color: #111827;
-  letter-spacing: -0.5px;
 }
 
 /* Основной контент */
