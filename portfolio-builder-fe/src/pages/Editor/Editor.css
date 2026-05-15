@@ -12,6 +12,64 @@
   background: #f9fafb;
 }
 
+.sidebar-item-main       { --bg-color: #EFF6FF; --accent-color: #3B82F6; }
+.sidebar-item-nav        { --bg-color: #ECFEFF; --accent-color: #06B6D4; }
+.sidebar-item-about      { --bg-color: #FAF5FF; --accent-color: #A855F7; }
+.sidebar-item-skills     { --bg-color: #ECFDF5; --accent-color: #10B981; }
+.sidebar-item-projects   { --bg-color: #FFF7ED; --accent-color: #F97316; }
+.sidebar-item-experience { --bg-color: #FFF1F2; --accent-color: #F43F5E; }
+.sidebar-item-footer     { --bg-color: #F1F5F9; --accent-color: #64748B; }
+.sidebar-item-github     { --bg-color: #EEF2FF; --accent-color: #6366F1; }
+.sidebar-item-custom     { --bg-color: #FDF4FF; --accent-color: #D946EF; }
+
+.block-card-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background-color: var(--bg-color, #f3f4f6);
+}
+
+.sidebar-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  transition: all 0.2s ease;
+}
+
+.block-card:active .block-card-icon-wrapper,
+.drag-cursor-block .block-card-icon-wrapper {
+  background-color: var(--accent-color) !important;
+  transition: all 0.2s ease;
+}
+
+.block-card:active .sidebar-icon-img,
+.drag-cursor-block .sidebar-icon-img {
+  filter: brightness(0) invert(1); 
+  transition: all 0.2s ease;
+}
+
+/* --- ИКОНКА ПЕРЕТАСКИВАНИЯ (точки) --- */
+.block-card:active .block-card-drag-handle img,
+.drag-cursor-block .block-card-drag-handle img {
+  background-color: var(--accent-color) !important;
+  -webkit-mask: url('../../assets/icons/points.svg') no-repeat center / contain;
+  mask: url('../../assets/icons/points.svg') no-repeat center / contain;
+  
+  object-position: -9999px; 
+  opacity: 1;
+}
+
+/* --- ТЕНЬ САМОГО БЛОКА --- */
+.block-card:active,
+.drag-cursor-block {
+  box-shadow: 0 6px 10px -5px color-mix(in srgb, var(--accent-color), transparent 60%) !important;
+  border-color: var(--accent-color) !important;
+}
+
 /* ===== Хедер (v50_435: 73px) ===== */
 .editor-header {
   display: flex;
@@ -154,7 +212,7 @@
   align-items: center;
   gap: 12px;
   min-height: 78px;
-  border: none;
+  border: 1px solid #ffffff;
   border-radius: 12px;
   padding: 11px 13px;
   cursor: grab;

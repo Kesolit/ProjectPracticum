@@ -628,23 +628,21 @@ const Editor = () => {
     }
 
     // 2. РЕНДЕР КАРТОЧКИ В САЙДБАРЕ
+    // Внутри renderBlockContent, секция для сайдбара:
     return (
       <>
-        {/* Иконка перетаскивания. Если pointsIcon не загрузится, будет виден этот квадрат */}
-        <div style={{ padding: '0 4px', color: '#9CA3AF', cursor: 'grab' }}>
-          {pointsIcon ? <img src={pointsIcon} alt="drag" /> : '⋮⋮'}
+        <div className="block-card-drag-handle">
+          {pointsIcon ? <img src={pointsIcon} className="drag-handle-img" alt="drag" /> : '⋮⋮'}
         </div>
-        
-        {/* Цветная обертка иконки */}
-        <div style={{ 
-          width: 40, height: 40, 
-          backgroundColor: block.bg || '#F3F4F6', 
-          borderRadius: 8, 
-          display: 'flex', alignItems: 'center', justifyContent: 'center' 
-        }}>
-          {block.icon && <img src={block.icon} alt={block.name} style={{ width: 20, height: 20 }} />}
+        <div className="block-card-icon-wrapper">
+          {block.icon && (
+            <img 
+              src={block.icon} 
+              alt={block.name} 
+              className="sidebar-icon-img" // Добавили класс
+            />
+          )}
         </div>
-        
         <div className="block-text">
           <strong>{block.name}</strong>
           <small>{block.desc}</small>
@@ -835,8 +833,7 @@ const Editor = () => {
             {EDITOR_BLOCK_CATALOG.map((block, idx) => (
               <div
                 key={idx}
-                className="block-card draggable"
-                data-sidebar-block={block.type}
+                className={`sidebar-item sidebar-item-${block.type} block-card draggable`}
                 draggable
                 onDragStart={(e) => handleDragStart(e, block)}
                 onDrag={handleDrag}
@@ -899,7 +896,7 @@ const Editor = () => {
 
       {isDragging && draggedBlock && (
         <div 
-          className="drag-cursor-block" 
+          className={`drag-cursor-block sidebar-item-${draggedBlock.type}`}
           style={{ 
             left: dragPosition.x, 
             top: dragPosition.y,
