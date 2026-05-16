@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { getPublicPortfolio } from '../../api/api' 
+import { getPublicPortfolio, API_BASE_URL } from '../../api/api' 
 import './PublicView.css'
 import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
@@ -11,6 +11,24 @@ const PublicView = () => {
   const [portfolio, setPortfolio] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const hasPrinted = useRef(false); // Флаг, что печать уже запущена
+  const [isReady, setIsReady] = useState(false);
+
+  // Отслеживаем готовность данных к отображению
+  useEffect(() => {
+    if (!loading && portfolio !== null) {
+      setIsReady(true);
+    }
+  }, [loading, portfolio]);
+
+  // Печать только один раз после полной готовности
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('print') === 'true' && isReady && !hasPrinted.current) {
+      hasPrinted.current = true;
+      setTimeout(() => window.print(), 300);
+    }
+  }, [isReady]);
 
   useEffect(() => {
     const loadPortfolio = async () => {
@@ -29,6 +47,13 @@ const PublicView = () => {
     }
     loadPortfolio()
   }, [slug])
+
+  const handleDownloadJsonResume = () => {
+    if (!slug) return;
+    const url = `${API_BASE_URL}/api/draft/resume/${slug}`;
+    // Открываем в новой вкладке (или сразу скачивание)
+    window.open(url, '_blank');
+  };
   
   if (loading) return <div className="loading">Загрузка стильного портфолио...</div>
   if (error || !portfolio) return <div className="error">{error || 'Портфолио не найдено'}</div>
@@ -41,7 +66,13 @@ const PublicView = () => {
       case 'nav':
         return (
           <nav className="nav-container">
-            <div className="nav-logo">{content?.logo || content?.logoText || 'МоёЛого.'}</div>
+            <div className="nav-logo">
+              {content?.logoImageUrl ? (
+                <img src={content.logoImageUrl} alt="" className="nav-logo-img" />
+              ) : (
+                content?.logo || content?.logoText || 'МоёЛого.'
+              )}
+            </div>
             <div className="nav-links">
               <span>Обо мне</span><span>Проекты</span>
             </div>
@@ -52,7 +83,11 @@ const PublicView = () => {
         return (
           <div className="main-block-public">
             <div className="main-avatar">
-              <span role="img" aria-label="avatar">👨‍💻</span>
+              {content?.avatarUrl ? (
+                <img src={content.avatarUrl} alt="" className="main-avatar-img" />
+              ) : (
+                <span role="img" aria-label="avatar">👨‍💻</span>
+              )}
             </div>
             <h1>{content?.greeting || 'Привет, я Алексей Иванов'}</h1>
             <h3 className="main-role">{content?.role || 'Frontend Разработчик'}</h3>
@@ -175,6 +210,11 @@ const PublicView = () => {
 
   return (
     <div className="public-view-container">
+      <div className="json-resume-download" style={{ textAlign: 'right', marginBottom: '1rem' }}>
+        <button onClick={handleDownloadJsonResume} className="btn-json-resume">
+          📄 Скачать в формате JSON Resume
+        </button>
+      </div>
       {portfolio.sections?.map((block: any, index: number) => (
         <section key={index} className="portfolio-section">
           {renderBlock(block)}
