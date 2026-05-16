@@ -1,19 +1,51 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { savePortfolioDraft } from "../../api/api";
+import { savePortfolioDraft, getMyDraft } from "../../api/api";
 import './Editor.css'
 import logo from '../../assets/logo.svg'
 import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
+import SaveSuccessModal from '../../components/SaveSuccessModal/SaveSuccessModal';
+import { sanitizeMultilineText } from '../../utils/multilineText'
+
+// Импорты иконок
+import mainIcon from '../../assets/icons/main.svg'
+import navIcon from '../../assets/icons/navigation.svg'
+import aboutIcon from '../../assets/icons/about.svg'
+import skillsIcon from '../../assets/icons/skills.svg'
+import caseIcon from '../../assets/icons/case.svg'
+import careerIcon from '../../assets/icons/career.svg'
+import footerIcon from '../../assets/icons/footer.svg'
+import githubIcon from '../../assets/icons/github.svg'
+import customIcon from '../../assets/icons/custom.svg'
+import pointsIcon from '../../assets/icons/points.svg'
+
+import iconLinkBlack from '../../assets/icon-link-black.svg'
+import iconArrow from '../../assets/icon-arrow.svg'
+import iconStatistics from '../../assets/icon-statistics.svg'
+import iconSettings from '../../assets/icon-settings.svg'
 
 interface BlockType {
   name: string
   desc: string
-  bg: string
-  square: string
   type: string
+  icon: string
+  bg?: string
   content?: any
 }
+
+/** Порядок блоков как в панели «Элементы конструктора» — выпадающее меню навигации следует ему */
+const EDITOR_BLOCK_CATALOG: BlockType[] = [
+  { name: 'Главный блок', desc: 'Хедер и приветствие', type: 'main', icon: mainIcon, bg: '#EFF6FF' },
+  { name: 'Навигация', desc: 'Верхнее меню', type: 'nav', icon: navIcon, bg: '#EBFDFF' },
+  { name: 'Раздел «Обо мне»', desc: 'Биография', type: 'about', icon: aboutIcon, bg: '#F9F5FF' },
+  { name: 'Раздел «Навыки»', desc: 'Техстек', type: 'skills', icon: skillsIcon, bg: '#EBFCF5' },
+  { name: 'Галерея проектов', desc: 'Кейсы', type: 'projects', icon: caseIcon, bg: '#FFF7ED' },
+  { name: 'История опыта', desc: 'Карьера', type: 'experience', icon: careerIcon, bg: '#FFF0F1' },
+  { name: 'Подвал (Футер)', desc: 'Контакты', type: 'footer', icon: footerIcon, bg: '#F0F5F8' },
+  { name: 'GitHub', desc: 'Виджет репозитория', type: 'github', icon: githubIcon, bg: '#EDF1FF' },
+  { name: 'Свободный блок', desc: 'Кастомный холст', type: 'custom', icon: customIcon, bg: '#FCF4FF' },
+]
 
 interface Project {
   id: number
@@ -30,13 +62,6 @@ interface Experience {
   desc: string
 }
 
-interface Review {
-  id: number
-  text: string
-  author: string
-  position: string
-}
-
 interface FooterData {
   name: string;
   github: string;
@@ -44,10 +69,21 @@ interface FooterData {
   telegram: string;
 }
 
+function readImageFileAsDataUrl(file: File, onLoaded: (dataUrl: string) => void) {
+  if (!file.type.startsWith('image/')) return
+  const reader = new FileReader()
+  reader.onload = () => onLoaded(reader.result as string)
+  reader.readAsDataURL(file)
+}
+
 // --- ПОД-КОМПОНЕНТЫ ---
 
 const ProjectsBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
   const [projects, setProjects] = useState<Project[]>(content?.projects || [])
+
+  useEffect(() => {
+    onChange({ projects });
+  }, [projects]);
 
   const addProject = () => {
     setProjects([...projects, { id: Date.now(), title: '', link: '', desc: '' }])
@@ -87,7 +123,17 @@ const ProjectsBlock = ({ content, onChange }: { content: any, onChange: (data: a
               className="project-input-desc" 
               placeholder="Краткое описание технологий и задач..."
               value={project.desc}
-              onChange={(e) => updateProject(project.id, 'desc', e.target.value)}
+              onChange={(e) =>
+                updateProject(
+                  project.id,
+                  'desc',
+                  sanitizeMultilineText(e.target.value, {
+                    maxLength: 2500,
+                    maxTotalNewlines: 40,
+                    maxConsecutiveNewlines: 2,
+                  })
+                )
+              }
               rows={3}
             />
           </div>
@@ -207,7 +253,17 @@ const ExperienceBlock = ({ content, onChange }: { content: any, onChange: (data:
                 className="exp-input-desc" 
                 placeholder="Обязанности и достижения..." 
                 value={exp.desc}
-                onChange={(e) => updateExperience(exp.id, 'desc', e.target.value)}
+                onChange={(e) =>
+                  updateExperience(
+                    exp.id,
+                    'desc',
+                    sanitizeMultilineText(e.target.value, {
+                      maxLength: 3500,
+                      maxTotalNewlines: 50,
+                      maxConsecutiveNewlines: 2,
+                    })
+                  )
+                }
                 rows={1}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
@@ -220,70 +276,6 @@ const ExperienceBlock = ({ content, onChange }: { content: any, onChange: (data:
         ))}
         <button className="add-experience-link-btn" onClick={addExperience}>
           <span className="plus-icon">+</span> Добавить место работы
-        </button>
-      </div>
-    </div>
-  )
-}
-
-const ReviewsBlock = ({ content, onChange }: { content: any, onChange: (data: any) => void }) => {
-  const [reviews, setReviews] = useState<Review[]>(content?.reviews || [
-    { id: 1, text: '', author: '', position: '' }
-  ])
-
-  useEffect(() => {
-    onChange({ reviews });
-  }, [reviews]);
-
-  const addReview = () => {
-    setReviews([...reviews, { id: Date.now(), text: '', author: '', position: '' }])
-  }
-
-  const updateReview = (id: number, field: keyof Review, value: string) => {
-    setReviews(reviews.map(rev => rev.id === id ? { ...rev, [field]: value } : rev))
-  }
-
-  const removeReview = (id: number) => {
-    setReviews(reviews.filter(rev => rev.id !== id))
-  }
-
-  return (
-    <div className="reviews-container-unfolded">
-      <h2 className="reviews-main-title">Отзывы</h2>
-      <div className="reviews-stack">
-        {reviews.map((rev) => (
-          <div key={rev.id} className="review-card-item fade-in">
-            <button className="review-card-remove" onClick={() => removeReview(rev.id)}>✕</button>
-            <textarea 
-              className="review-input-text" 
-              placeholder="Текст отзыва рекомендателя..." 
-              value={rev.text}
-              onChange={(e) => updateReview(rev.id, 'text', e.target.value)}
-              rows={1}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = `${target.scrollHeight}px`;
-              }}
-            />
-            <div className="review-author-box">
-              <input 
-                className="review-input-name" 
-                placeholder="Имя Фамилия" 
-                value={rev.author}
-                onChange={(e) => updateReview(rev.id, 'author', e.target.value)}
-              />
-              <input 
-                className="review-input-pos" 
-                placeholder="Должность" 
-                value={rev.position}
-                onChange={(e) => updateReview(rev.id, 'position', e.target.value)}
-              />
-            </div>
-          </div>
-        ))}
-        <button className="add-review-action-btn" onClick={addReview}>
-          <span className="plus-circle">+</span> Добавить отзыв
         </button>
       </div>
     </div>
@@ -326,36 +318,110 @@ const FooterBlock = ({ content, onChange }: { content: any, onChange: (data: any
 };
 
 
+
 // --- ГЛАВНЫЙ КОМПОНЕНТ РЕДАКТОРА ---
 
 const Editor = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isPortfolioNavDropdownOpen, setIsPortfolioNavDropdownOpen] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
   const [droppedBlocks, setDroppedBlocks] = useState<BlockType[]>([])
   const [draggedBlock, setDraggedBlock] = useState<BlockType | null>(null)
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState('');
+  const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(true);
+  const [currentSlug, setCurrentSlug] = useState<string | null>(null);
   
   const navigate = useNavigate()
 
-  const blocks: BlockType[] = [
-    { name: 'Главный блок', desc: 'Хедер и приветствие', bg: '#DBEAFE', square: '#3B82F6', type: 'main' },
-    { name: 'Навигация', desc: 'Верхнее меню', bg: '#F3E8FF', square: '#8B5CF6', type: 'nav' },
-    { name: 'Обо мне', desc: 'Биография', bg: '#DCFCE7', square: '#10B981', type: 'about' },
-    { name: 'Галерея проектов', desc: 'Кейсы', bg: '#FEF9C3', square: '#EAB308', type: 'projects' },
-    { name: 'Навыки', desc: 'Технологии', bg: '#CFFAFE', square: '#06B6D4', type: 'skills' },
-    { name: 'История опыта', desc: 'Карьера', bg: '#FFEDD5', square: '#F97316', type: 'experience' },
-    { name: 'Отзывы', desc: 'Рекомендации', bg: '#FCE7F3', square: '#EC489A', type: 'reviews' },
-    { name: 'Подвал', desc: 'Контакты', bg: '#E5E7EB', square: '#6B7280', type: 'footer' },
-    { name: 'Интеграция GitHub', desc: 'Репозиторий', bg: '#E0F2FE', square: '#0EA5E9', type: 'github' },
-    { name: 'Кастомный блок ', desc: 'Свободное содержимое', bg: '#F3F4F6', square: '#9CA3AF', type: 'custom' }
-  ]
+  const scrollElementIntoCanvasOrSidebar = useCallback((blockType: string) => {
+    requestAnimationFrame(() => {
+      const canvasEl = document.getElementById(`editor-canvas-section-${blockType}`)
+      if (canvasEl) {
+        canvasEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        return
+      }
+      const sidebarEl = document.querySelector(`[data-sidebar-block="${blockType}"]`)
+      if (sidebarEl) {
+        ;(sidebarEl as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    })
+  }, [])
 
-  const updateBlockContent = (index: number, newContent: any) => {
-    setDroppedBlocks(prev => prev.map((block, i) => 
-      i === index ? { ...block, content: newContent } : block
-    ));
+  const scrollFromPortfolioNavDropdown = useCallback(
+    (blockType: string) => {
+      setIsPortfolioNavDropdownOpen(false)
+      scrollElementIntoCanvasOrSidebar(blockType)
+    },
+    [scrollElementIntoCanvasOrSidebar]
+  )
+
+  const portfolioNavMenuItems = useMemo(() => {
+    const onCanvas = new Set(droppedBlocks.map((b) => b.type))
+    return EDITOR_BLOCK_CATALOG.filter((b) => onCanvas.has(b.type) && b.type !== 'nav')
+  }, [droppedBlocks])
+
+  const handleSortStart = (index: number) => {
+    setDraggedItemIndex(index);
   };
 
+  const handleSortOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedItemIndex === null || draggedItemIndex === index) return;
+
+    const newBlocks = [...droppedBlocks];
+    const draggedItem = newBlocks[draggedItemIndex];
+    newBlocks.splice(draggedItemIndex, 1);
+    newBlocks.splice(index, 0, draggedItem);
+    
+    setDraggedItemIndex(index);
+    setDroppedBlocks(newBlocks);
+  };
+
+  const handleSortEnd = () => {
+    setDraggedItemIndex(null);
+  };
+
+    const handlePreview = () => {
+      // Сохраняем текущее состояние блоков во временное хранилище
+      const previewData = {
+        sections: droppedBlocks,
+        isPreview: true 
+      };
+      localStorage.setItem('portfolio_preview', JSON.stringify(previewData));
+      
+      // Открываем страницу предпросмотра в новой вкладке
+      window.open('/preview', '_blank');
+    };
+
+  const updateBlockContent = (index: number, newContent: any) => {
+      setDroppedBlocks(prev => prev.map((block, i) => 
+        i === index ? { ...block, content: newContent } : block
+      ));
+    };
+
+    const loadUserDraft = async () => {
+    try {
+      setIsLoadingDraft(true);
+      const response = await getMyDraft();
+      // Структура ответа: { success: true, data: { id, title, sections, updatedAt } }
+      if (response.success && response.data && response.data.sections) {
+        setDroppedBlocks(response.data.sections);
+      }
+    } catch (err) {
+      console.error("Не удалось загрузить черновик:", err);
+      // Если ошибка (например, нет черновика), просто оставляем пустую страницу
+    } finally {
+      setIsLoadingDraft(false);
+    }
+  };
+
+  
+  
   const handleSave = async () => {
     try {
       const response = await savePortfolioDraft({
@@ -365,49 +431,147 @@ const Editor = () => {
       
       if (response && response.slug) {
         const viewUrl = `${window.location.origin}/view/${response.slug}`;
-        
-        prompt('Портфолио успешно опубликовано! Скопируйте вашу ссылку:', viewUrl);
+        setCurrentUrl(viewUrl);
+        setIsModalOpen(true);
       } else {
-        alert('Сохранено, но сервер не вернул ссылку (slug).');
+        alert('Сохранено, но сервер не вернул ссылку.');
       }
-      
     } catch (err: any) {
       alert('Ошибка при сохранении: ' + err.message);
     }
   };
 
-  // ИСПРАВЛЕННАЯ ЛОГИКА ПРОВЕРКИ АВТОРИЗАЦИИ
+  const handleExport = async () => {
+    if (currentSlug) {
+      // Если портфолио уже сохранено – сразу открываем версию для печати
+      const printUrl = `${window.location.origin}/view/${currentSlug}?print=true`;
+      window.open(printUrl, '_blank');
+    } else {
+      // Если ещё не сохранено – сначала сохраняем, затем открываем печать
+      try {
+        const response = await savePortfolioDraft({
+          title: "Моё крутое портфолио",
+          sections: droppedBlocks
+        });
+        if (response && response.slug) {
+          setCurrentSlug(response.slug);
+          const printUrl = `${window.location.origin}/view/${response.slug}?print=true`;
+          window.open(printUrl, '_blank');
+        } else {
+          alert('Не удалось сохранить портфолио для экспорта.');
+        }
+      } catch (err: any) {
+        alert('Ошибка сохранения: ' + err.message);
+      }
+    }
+  };
+
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
       const isAuth = localStorage.getItem('isLoggedIn') === 'true';
       setIsLoggedIn(!!isAuth && !!token);
+      if (isAuth && token) {
+        loadUserDraft();
+      } else {
+        setIsLoadingDraft(false);
+      }
+
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          setUserData(JSON.parse(storedUser));
+        } catch (e) {
+          console.error("Ошибка парсинга данных пользователя", e);
+        }
+      }
     };
 
     checkAuth();
-    // Слушаем изменения в localStorage (помогает, если вход был в другой вкладке)
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
-  }, [])
+  }, []);
 
+  // Закрытие выпадающих меню при клике мимо
+  useEffect(() => {
+    if (!isMenuOpen && !isPortfolioNavDropdownOpen) return;
+    const handleGlobalClick = () => {
+      setIsMenuOpen(false);
+      setIsPortfolioNavDropdownOpen(false);
+    };
+    document.addEventListener('click', handleGlobalClick);
+    return () => document.removeEventListener('click', handleGlobalClick);
+  }, [isMenuOpen, isPortfolioNavDropdownOpen]);
+
+  // Функция рендера контента
   const renderBlockContent = (block: BlockType, isExpanded: boolean, index?: number) => {
+    // 1. РЕНДЕР РАЗВЕРНУТОГО БЛОКА В КАНВАСЕ
     if (isExpanded && index !== undefined) {
-      
       if (block.type === 'nav') {
         return (
           <div className="nav-layout-unfolded">
-            <div className="nav-logo-section">
-              <div className="logo-placeholder-circle">+</div>
-              <input 
-                value={block.content?.logoText || 'МоёЛого.'} 
-                onChange={(e) => updateBlockContent(index, { ...block.content, logoText: e.target.value })}
-                style={{ background: 'transparent', border: 'none', color: 'white', fontWeight: 'bold', fontSize: '1.2rem', outline: 'none' }}
-              />
+            <div className="nav-logo-section nav-logo-section--upload">
+              <label className="nav-logo-upload" htmlFor={`nav-logo-file-${index}`}>
+                <input
+                  type="file"
+                  id={`nav-logo-file-${index}`}
+                  className="editor-block-file-input"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    readImageFileAsDataUrl(file, (url) => {
+                      updateBlockContent(index, { ...block.content, logoImageUrl: url })
+                      e.target.value = ''
+                    })
+                  }}
+                />
+                {block.content?.logoImageUrl ? (
+                  <img src={block.content.logoImageUrl} alt="" className="nav-logo-preview" />
+                ) : (
+                  <span className="nav-logo-fallback">МоёЛого.</span>
+                )}
+              </label>
             </div>
-            <div className="nav-links-section">
-              <div className="nav-link-item">Обо мне</div>
-              <div className="nav-link-item">Проекты</div>
-              <div className="nav-link-item">Контакты</div>
+            <div className="nav-portfolio-dropdown" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="nav-portfolio-dropdown-trigger"
+                aria-expanded={isPortfolioNavDropdownOpen}
+                aria-haspopup="menu"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMenuOpen(false);
+                  setIsPortfolioNavDropdownOpen((v) => !v);
+                }}
+              >
+                <span className="nav-portfolio-dropdown-trigger-label">Разделы</span>
+                <span className={`nav-portfolio-dropdown-chevron${isPortfolioNavDropdownOpen ? ' is-open' : ''}`} aria-hidden />
+              </button>
+              {isPortfolioNavDropdownOpen && (
+                <div className="nav-portfolio-dropdown-panel" role="menu">
+                  {portfolioNavMenuItems.length === 0 ? (
+                    <div className="nav-portfolio-dropdown-empty" role="presentation">
+                      Добавьте блоки с панели слева — здесь появятся ссылки в том же порядке, что в конструкторе.
+                    </div>
+                  ) : (
+                    portfolioNavMenuItems.map((b) => (
+                      <button
+                        key={b.type}
+                        type="button"
+                        role="menuitem"
+                        className="nav-portfolio-dropdown-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          scrollFromPortfolioNavDropdown(b.type);
+                        }}
+                      >
+                        {b.name}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
         );
@@ -416,9 +580,30 @@ const Editor = () => {
       if (block.type === 'main') {
         return (
           <div className="main-block-unfolded">
-            <div className="avatar-upload-zone">
-              <div className="avatar-placeholder">+</div>
-            </div>
+            <label
+              className={`avatar-upload-zone${block.content?.avatarUrl ? ' avatar-upload-zone--has-image' : ''}`}
+              htmlFor={`main-avatar-file-${index}`}
+            >
+              <input
+                type="file"
+                id={`main-avatar-file-${index}`}
+                className="editor-block-file-input"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  readImageFileAsDataUrl(file, (url) => {
+                    updateBlockContent(index, { ...block.content, avatarUrl: url })
+                    e.target.value = ''
+                  })
+                }}
+              />
+              {block.content?.avatarUrl ? (
+                <img src={block.content.avatarUrl} alt="" className="main-avatar-preview" />
+              ) : (
+                <span className="avatar-placeholder" aria-hidden>+</span>
+              )}
+            </label>
             <div className="main-content-inputs">
               <input 
                 type="text" 
@@ -439,7 +624,16 @@ const Editor = () => {
                 placeholder="Краткое описание вашего опыта и стека..." 
                 rows={2} 
                 value={block.content?.description || ''}
-                onChange={(e) => updateBlockContent(index, { ...block.content, description: e.target.value })}
+                onChange={(e) =>
+                  updateBlockContent(index, {
+                    ...block.content,
+                    description: sanitizeMultilineText(e.target.value, {
+                      maxLength: 3500,
+                      maxTotalNewlines: 45,
+                      maxConsecutiveNewlines: 2,
+                    }),
+                  })
+                }
               />
             </div>
           </div>
@@ -452,9 +646,17 @@ const Editor = () => {
             <h2 className="about-title">Обо мне</h2>
             <textarea
               className="about-input-field"
-              placeholder="Напишите здесь подробную информацию о вашем пути в IT, образовании и увлечениях..."
+              placeholder="Напишите здесь подробную информацию о вашем пути в IT..."
               value={block.content?.text || ''}
-              onChange={(e) => updateBlockContent(index, { text: e.target.value })}
+              onChange={(e) =>
+                updateBlockContent(index, {
+                  text: sanitizeMultilineText(e.target.value, {
+                    maxLength: 12000,
+                    maxTotalNewlines: 100,
+                    maxConsecutiveNewlines: 2,
+                  }),
+                })
+              }
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = 'auto';
@@ -468,15 +670,27 @@ const Editor = () => {
       if (block.type === 'projects') return <ProjectsBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'skills') return <SkillsBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'experience') return <ExperienceBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
-      if (block.type === 'reviews') return <ReviewsBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'footer') return <FooterBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'github') return <GithubBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
       if (block.type === 'custom') return <CustomBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
     }
 
+    // 2. РЕНДЕР КАРТОЧКИ В САЙДБАРЕ
+    // Внутри renderBlockContent, секция для сайдбара:
     return (
       <>
-        <div className="block-color-square" style={{ backgroundColor: block.square }}></div>
+        <div className="block-card-drag-handle">
+          {pointsIcon ? <img src={pointsIcon} className="drag-handle-img" alt="drag" /> : '⋮⋮'}
+        </div>
+        <div className="block-card-icon-wrapper">
+          {block.icon && (
+            <img 
+              src={block.icon} 
+              alt={block.name} 
+              className="sidebar-icon-img" // Добавили класс
+            />
+          )}
+        </div>
         <div className="block-text">
           <strong>{block.name}</strong>
           <small>{block.desc}</small>
@@ -488,13 +702,9 @@ const Editor = () => {
   const handleLogoClick = () => navigate('/')
   
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('jwt_token');
+    localStorage.clear();
     setIsLoggedIn(false);
+    setIsMenuOpen(false);
     navigate('/login');
   };
 
@@ -525,7 +735,11 @@ const Editor = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    const blockData = e.dataTransfer.getData('block')
+    if (draggedItemIndex !== null) {
+      setDraggedItemIndex(null);
+      return;
+    }
+    const blockData = e.dataTransfer.getData('block');
     if (blockData) {
       const block: BlockType = JSON.parse(blockData)
       if (!droppedBlocks.some(b => b.type === block.type)) {
@@ -546,13 +760,23 @@ const Editor = () => {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        setDragPosition({ x: e.clientX, y: e.clientY })
-      }
+      if (isDragging) setDragPosition({ x: e.clientX, y: e.clientY })
     }
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [isDragging])
+
+  const userFirstName = userData?.name || userData?.firstName || 'Имя';
+  const userLastName = userData?.surname || userData?.lastName || 'Фамилия';
+  const userDisplayName =
+    (typeof userData?.fullName === 'string' && userData.fullName.trim()) ||
+    [userData?.firstName, userData?.lastName].filter(Boolean).join(' ').trim() ||
+    `${userFirstName} ${userLastName}`.trim();
+  const portfolioViews =
+    userData?.totalViews ??
+    userData?.viewCount ??
+    userData?.portfolioViews ??
+    0;
 
   return (
     <div className="editor">
@@ -562,22 +786,84 @@ const Editor = () => {
           <span className="logo-text">dev/folio</span>
         </div>
         <div className="header-actions">
-          <button className="header-btn"><span className="icon">👁</span> Предпросмотр</button>
-          <button className="header-btn"><span className="icon">⬇</span> Экспорт</button>
+          <button className="header-btn preview-btn" onClick={handlePreview}><span className="icon">👁</span> Предпросмотр</button>
+          <button className="header-btn" onClick={handleExport}><span className="icon">⬇</span> Экспорт</button>
           <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
           
-          {/* ОБНОВЛЕННЫЙ УСЛОВНЫЙ РЕНДЕРИНГ ПРОФИЛЯ */}
           {isLoggedIn ? (
-            <div className="profile-wrapper" onClick={handleLogout}>
-              <div className="profile-avatar-container">
-                <img 
-                  src="https://via.placeholder.com/40" // Сюда можно подставить фото из localStorage
-                  alt="User" 
-                  className="profile-avatar"
-                />
-                <div className="logout-overlay">Выйти</div>
-              </div>
+          <div className="profile-container">
+            <div className="profile-avatar-wrapper" onClick={(e) => { e.stopPropagation(); setIsPortfolioNavDropdownOpen(false); setIsMenuOpen(!isMenuOpen); }}>
+              <img 
+                src="https://via.placeholder.com/40" 
+                alt="User" 
+                className="profile-avatar"
+              />
             </div>
+
+            {isMenuOpen && (
+              <div className="user-dropdown-menu" onClick={(e) => e.stopPropagation()} role="menu">
+                <div className="dropdown-header">
+                  <span className="user-fullname">{userDisplayName}</span>
+                  <span className="user-email">{userData?.email || 'email@example.com'}</span>
+                </div>
+
+                <div className="dropdown-divider" aria-hidden />
+
+                <button
+                  type="button"
+                  className="dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    navigate('/dashboard');
+                  }}
+                >
+                  <span className="item-content-left">
+                    <img src={iconLinkBlack} alt="" className="item-icon-svg" width={18} height={18} />
+                    <span className="dropdown-item-label">Моё портфолио</span>
+                  </span>
+                  <img src={iconArrow} alt="" className="item-arrow-svg" width={12} height={12} />
+                </button>
+
+                <button
+                  type="button"
+                  className="dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    navigate('/stats');
+                  }}
+                >
+                  <span className="item-content-left">
+                    <img src={iconStatistics} alt="" className="item-icon-svg" width={18} height={18} />
+                    <span className="dropdown-item-label">Статистика просмотров</span>
+                  </span>
+                  <span className="item-stats-count">{portfolioViews}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="dropdown-item dropdown-item--plain-end"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    navigate('/settings');
+                  }}
+                >
+                  <span className="item-content-left">
+                    <img src={iconSettings} alt="" className="item-icon-svg" width={18} height={18} />
+                    <span className="dropdown-item-label">Настройки аккаунта</span>
+                  </span>
+                </button>
+
+                <div className="dropdown-divider" aria-hidden />
+
+                <button type="button" className="dropdown-logout" role="menuitem" onClick={handleLogout}>
+                  Выйти из аккаунта
+                </button>
+              </div>
+            )}
+          </div>
           ) : (
             <div className="auth-group">
               <button className="header-btn login-link-btn" onClick={() => navigate('/login')}>Войти</button>
@@ -592,11 +878,10 @@ const Editor = () => {
           <h2>Элементы конструктора</h2>
           <p className="hint">Перетащите блоки для создания портфолио</p>
           <div className="blocks-list">
-            {blocks.map((block, idx) => (
+            {EDITOR_BLOCK_CATALOG.map((block, idx) => (
               <div
                 key={idx}
-                className="block-card draggable"
-                style={{ backgroundColor: block.bg }}
+                className={`sidebar-item sidebar-item-${block.type} block-card draggable`}
                 draggable
                 onDragStart={(e) => handleDragStart(e, block)}
                 onDrag={handleDrag}
@@ -609,49 +894,58 @@ const Editor = () => {
         </aside>
 
         <main className="canvas" onDrop={handleDrop} onDragOver={handleDragOver}>
-          {droppedBlocks.length === 0 ? (
-            <div className="empty-state">
-              <h3>Начните создавать свое портфолио</h3>
-              <p>Перетащите компоненты из левой боковой панели, чтобы создать идеальное портфолио разработчика.</p>
-              <div className="tip">Совет: Начните с Главного блока, чтобы представиться.</div>
-              <div className="placeholder">Перетащите элементы сюда — Ваше портфолио появится здесь</div>
-            </div>
+          {isLoadingDraft ? (
+            <div className='loading-draft'>Загрузка вашего замечательного портфолио...</div>
           ) : (
-            <div className="dropped-blocks-container">
-              {droppedBlocks.map((block, idx) => (
-                <div key={idx} className="dropped-card-wrapper fade-in">
-                  <div
-                    className={`dropped-card
-                      ${block.type === 'nav' ? 'nav-card-full' : ''}
-                      ${block.type === 'main' ? 'main-card-full' : ''}
-                      ${block.type === 'about' ? 'about-card-full' : ''}
-                      ${block.type === 'projects' ? 'projects-card-full' : ''}
-                      ${block.type === 'skills' ? 'skills-card-full' : ''}
-                      ${block.type === 'experience' ? 'experience-card-full' : ''}
-                      ${block.type === 'reviews' ? 'reviews-card-full' : ''}
-                      ${block.type === 'footer' ? 'footer-card-full' : ''}
-                      ${block.type === 'github' ? 'github-card-full' : ''}
-                      ${block.type === 'custom' ? 'custom-card-full' : ''}`}
-                    style={!['nav', 'main', 'about', 'projects', 'skills', 'experience', 'reviews', 'footer', 'github', 'custom'].includes(block.type) ? { backgroundColor: block.bg } : {}}
-                  >
-                    <div className="block-label-badge">{block.name}</div>
-                    {renderBlockContent(block, true, idx)}
-                    <button className="remove-block-btn" onClick={() => removeBlock(block.type)} title="Удалить блок">✕</button>
+            droppedBlocks.length === 0 ? (
+              <div className="empty-state">
+                <h3>Начните создавать свое портфолио</h3>
+                <p>Перетащите компоненты из левой боковой панели, чтобы создать идеальное портфолио разработчика.</p>
+                <div className="tip">Совет: Начните с Главного блока, чтобы представиться.</div>
+                <div className="placeholder">Перетащите элементы сюда — Ваше портфолио появится здесь</div>
+              </div>
+            ) : (
+              <div className="dropped-blocks-container">
+                {droppedBlocks.map((block, idx) => (
+                  <div key={idx} className="dropped-card-wrapper fade-in">
+                    <div
+                      className={`dropped-card
+                        ${block.type === 'nav' ? 'nav-card-full' : ''}
+                        ${block.type === 'main' ? 'main-card-full' : ''}
+                        ${block.type === 'about' ? 'about-card-full' : ''}
+                        ${block.type === 'projects' ? 'projects-card-full' : ''}
+                        ${block.type === 'skills' ? 'skills-card-full' : ''}
+                        ${block.type === 'experience' ? 'experience-card-full' : ''}
+                        ${block.type === 'reviews' ? 'reviews-card-full' : ''}
+                        ${block.type === 'footer' ? 'footer-card-full' : ''}
+                        ${block.type === 'github' ? 'github-card-full' : ''}
+                        ${block.type === 'custom' ? 'custom-card-full' : ''}`}
+                      style={!['nav', 'main', 'about', 'projects', 'skills', 'experience', 'reviews', 'footer', 'github', 'custom'].includes(block.type) ? { backgroundColor: block.bg } : {}}
+                    >
+                      <div className="block-label-badge">{block.name}</div>
+                      {renderBlockContent(block, true, idx)}
+                      <button className="remove-block-btn" onClick={() => removeBlock(block.type)} title="Удалить блок">✕</button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )
           )}
         </main>
       </div>
 
+      <SaveSuccessModal isOpen={isModalOpen} publicUrl={currentUrl} onClose={() => setIsModalOpen(false)} />
+
       {isDragging && draggedBlock && (
-        <div
-          className="drag-cursor-block"
-          style={{
-            left: dragPosition.x + 10,
-            top: dragPosition.y + 10,
-            backgroundColor: draggedBlock.bg,
+        <div 
+          className={`drag-cursor-block sidebar-item-${draggedBlock.type}`}
+          style={{ 
+            left: dragPosition.x, 
+            top: dragPosition.y,
+            position: 'fixed',
+            pointerEvents: 'none',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1000
           }}
         >
           {renderBlockContent(draggedBlock, false)}
