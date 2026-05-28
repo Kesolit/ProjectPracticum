@@ -20,10 +20,40 @@ interface Portfolio {
 // Моковые данные
 const mockPortfolios: Portfolio[] = [
   {
-    id: '1', name: 'Алексей Иванов', avatar: '', isOnline: true,
+    id: '1', name: 'Алексей Иванов', avatar: 'https://i.pravatar.cc/150?u=1', isOnline: true,
     role: 'Frontend', level: 'Middle', location: 'Москва',
     description: 'Делаю интерфейсы на React и TypeScript. Люблю чистую архитектуру и дизайн-системы.',
     technologies: ['React', 'TypeScript'], extraTechCount: 5, views: '1.2k', timeAgo: '2 дня назад'
+  },
+  {
+    id: '2', name: 'Мария Соколова', avatar: 'https://i.pravatar.cc/150?u=2', isOnline: true,
+    role: 'Fullstack', level: 'Senior', location: 'Санкт-Петербург',
+    description: '7 лет в продуктовой разработке. Запускала B2B-сервисы с нуля, фокус на DX.',
+    technologies: ['React', 'Node.js'], extraTechCount: 7, views: '3.4k', timeAgo: 'вчера'
+  },
+  {
+    id: '3', name: 'Дмитрий Марков', avatar: 'https://i.pravatar.cc/150?u=3', isOnline: false,
+    role: 'Frontend', level: 'Middle', location: 'Казань',
+    description: 'Делаю SPA на Vue и React. Сильный опыт в анимациях и pet-проектах на Three.js.',
+    technologies: ['Vue', 'React'], extraTechCount: 4, views: '842', timeAgo: 'неделю назад'
+  },
+  {
+    id: '4', name: 'Анна Петрова', avatar: 'https://i.pravatar.cc/150?u=4', isOnline: true,
+    role: 'Frontend', level: 'Middle', location: 'Новосибирск',
+    description: 'Разрабатываю интерфейсы и пишу про DX. Спикер ReactConf, веду блог о фронтенде.',
+    technologies: ['React', 'TypeScript'], extraTechCount: 6, views: '2.1k', timeAgo: '3 дня назад'
+  },
+  {
+    id: '5', name: 'Игорь Сидоров', avatar: 'https://i.pravatar.cc/150?u=5', isOnline: false,
+    role: 'Mobile', level: 'Senior', location: 'Удаленно',
+    description: 'iOS-разработчик на Swift. Релизил приложения в банковской и финтех-индустрии.',
+    technologies: ['Swift', 'SwiftUI'], extraTechCount: 3, views: '1.8k', timeAgo: '5 дней назад'
+  },
+  {
+    id: '6', name: 'Ольга Кузнецова', avatar: 'https://i.pravatar.cc/150?u=6', isOnline: true,
+    role: 'Frontend', level: 'Junior', location: 'Екатеринбург',
+    description: 'Перешла во фронтенд из дизайна. 1.5 года опыта. Сильна в вёрстке и UI-деталях.',
+    technologies: ['React', 'CSS', 'Figma'], extraTechCount: 0, views: '456', timeAgo: 'сегодня'
   }
 ];
 
@@ -48,6 +78,12 @@ const Dashboard: React.FC = () => {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
             Перейти в портфолио
           </button>
+
+          <button className="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+            Перейти в портфолио
+          </button>
+          <img src="https://i.pravatar.cc/150?u=10" alt="User" className="user-avatar" />
         </div>
       </header>
 

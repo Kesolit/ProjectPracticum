@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://portfoliobackend-production-8982.up.railway.app'; // C# сервер
+export const API_BASE_URL = 'https://portfoliobackend-production-8982.up.railway.app'; // C# сервер
 
 // ----- Вспомогательные функции для токенов -----
 export const setTokens = (accessToken: string, refreshToken: string) => {

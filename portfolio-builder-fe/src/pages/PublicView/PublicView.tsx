@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { getPublicPortfolio } from '../../api/api' 
+import { getPublicPortfolio, API_BASE_URL } from '../../api/api' 
 import './PublicView.css'
 import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
@@ -11,6 +11,24 @@ const PublicView = () => {
   const [portfolio, setPortfolio] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const hasPrinted = useRef(false); // Флаг, что печать уже запущена
+  const [isReady, setIsReady] = useState(false);
+
+  // Отслеживаем готовность данных к отображению
+  useEffect(() => {
+    if (!loading && portfolio !== null) {
+      setIsReady(true);
+    }
+  }, [loading, portfolio]);
+
+  // Печать только один раз после полной готовности
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('print') === 'true' && isReady && !hasPrinted.current) {
+      hasPrinted.current = true;
+      setTimeout(() => window.print(), 300);
+    }
+  }, [isReady]);
 
   useEffect(() => {
     const loadPortfolio = async () => {
@@ -29,6 +47,13 @@ const PublicView = () => {
     }
     loadPortfolio()
   }, [slug])
+
+  const handleDownloadJsonResume = () => {
+    if (!slug) return;
+    const url = `${API_BASE_URL}/api/draft/resume/${slug}`;
+    // Открываем в новой вкладке (или сразу скачивание)
+    window.open(url, '_blank');
+  };
   
   if (loading) return <div className="loading">Загрузка стильного портфолио...</div>
   if (error || !portfolio) return <div className="error">{error || 'Портфолио не найдено'}</div>
@@ -185,6 +210,11 @@ const PublicView = () => {
 
   return (
     <div className="public-view-container">
+      <div className="json-resume-download" style={{ textAlign: 'right', marginBottom: '1rem' }}>
+        <button onClick={handleDownloadJsonResume} className="btn-json-resume">
+          📄 Скачать в формате JSON Resume
+        </button>
+      </div>
       {portfolio.sections?.map((block: any, index: number) => (
         <section key={index} className="portfolio-section">
           {renderBlock(block)}

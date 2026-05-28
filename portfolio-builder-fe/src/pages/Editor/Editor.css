@@ -12,6 +12,14 @@
   background: #f9fafb;
 }
 
+
+.loading-draft {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: 1.2rem;
+}
+
 .sidebar-item-main       { --bg-color: #EFF6FF; --accent-color: #3B82F6; }
 .sidebar-item-nav        { --bg-color: #ECFEFF; --accent-color: #06B6D4; }
 .sidebar-item-about      { --bg-color: #FAF5FF; --accent-color: #A855F7; }
@@ -1504,4 +1512,14 @@
 .dropdown-logout:focus-visible {
   outline: 2px solid #e11d48;
   outline-offset: -4px;
+}
+
+.preview-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-btn img{
+  width: 17px;
 }

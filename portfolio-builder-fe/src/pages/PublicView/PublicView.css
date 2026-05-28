@@ -10,6 +10,22 @@
   padding-bottom: 60px;
 }
 
+@media print {
+  .json-resume-download,
+  .nav-container,
+  .footer-links {
+    display: none !important;
+  }
+  body {
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+  .main-block-public, .section-container {
+    page-break-inside: avoid;
+  }
+}
+
 .portfolio-section {
   width: 100%;
   display: flex;

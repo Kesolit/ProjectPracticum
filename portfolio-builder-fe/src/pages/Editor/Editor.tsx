@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { savePortfolioDraft } from "../../api/api";
+import { savePortfolioDraft, getMyDraft } from "../../api/api";
 import './Editor.css'
 import logo from '../../assets/logo.svg'
+import eyeOn from '../../assets/eye-on.svg'
+import download from '../../assets/download.svg'
 import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
 import SaveSuccessModal from '../../components/SaveSuccessModal/SaveSuccessModal';
@@ -333,6 +335,8 @@ const Editor = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(true);
+  const [currentSlug, setCurrentSlug] = useState<string | null>(null);
   
   const navigate = useNavigate()
 
@@ -397,9 +401,25 @@ const Editor = () => {
     };
 
   const updateBlockContent = (index: number, newContent: any) => {
-    setDroppedBlocks(prev => prev.map((block, i) => 
-      i === index ? { ...block, content: newContent } : block
-    ));
+      setDroppedBlocks(prev => prev.map((block, i) => 
+        i === index ? { ...block, content: newContent } : block
+      ));
+    };
+
+    const loadUserDraft = async () => {
+    try {
+      setIsLoadingDraft(true);
+      const response = await getMyDraft();
+      // Структура ответа: { success: true, data: { id, title, sections, updatedAt } }
+      if (response.success && response.data && response.data.sections) {
+        setDroppedBlocks(response.data.sections);
+      }
+    } catch (err) {
+      console.error("Не удалось загрузить черновик:", err);
+      // Если ошибка (например, нет черновика), просто оставляем пустую страницу
+    } finally {
+      setIsLoadingDraft(false);
+    }
   };
 
   
@@ -423,11 +443,41 @@ const Editor = () => {
     }
   };
 
+  const handleExport = async () => {
+    if (currentSlug) {
+      // Если портфолио уже сохранено – сразу открываем версию для печати
+      const printUrl = `${window.location.origin}/view/${currentSlug}?print=true`;
+      window.open(printUrl, '_blank');
+    } else {
+      // Если ещё не сохранено – сначала сохраняем, затем открываем печать
+      try {
+        const response = await savePortfolioDraft({
+          title: "Моё крутое портфолио",
+          sections: droppedBlocks
+        });
+        if (response && response.slug) {
+          setCurrentSlug(response.slug);
+          const printUrl = `${window.location.origin}/view/${response.slug}?print=true`;
+          window.open(printUrl, '_blank');
+        } else {
+          alert('Не удалось сохранить портфолио для экспорта.');
+        }
+      } catch (err: any) {
+        alert('Ошибка сохранения: ' + err.message);
+      }
+    }
+  };
+
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
       const isAuth = localStorage.getItem('isLoggedIn') === 'true';
       setIsLoggedIn(!!isAuth && !!token);
+      if (isAuth && token) {
+        loadUserDraft();
+      } else {
+        setIsLoadingDraft(false);
+      }
 
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
@@ -738,8 +788,8 @@ const Editor = () => {
           <span className="logo-text">dev/folio</span>
         </div>
         <div className="header-actions">
-          <button className="header-btn preview-btn" onClick={handlePreview}><span className="icon">👁</span> Предпросмотр</button>
-          <button className="header-btn"><span className="icon">⬇</span> Экспорт</button>
+          <button className="header-btn preview-btn" onClick={handlePreview}><img src={eyeOn}/>Предпросмотр</button>
+          <button className="header-btn" onClick={handleExport}><img src={download}/> Экспорт</button>
           <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
           
           {isLoggedIn ? (
@@ -846,48 +896,42 @@ const Editor = () => {
         </aside>
 
         <main className="canvas" onDrop={handleDrop} onDragOver={handleDragOver}>
-          {droppedBlocks.length === 0 ? (
-            <div className="empty-state">
-              <h3>Начните создавать свое портфолио</h3>
-              <div className="tip">Совет: Начните с Главного блока, чтобы представиться.</div>
-              <p>Перетащите компоненты из левой боковой панели, чтобы создать идеальное портфолио разработчика. Меняйте их порядок по своему усмотрению!</p>
-              <div className="placeholder">
-                Перетащите элементы сюда. Ваше портфолио появится здесь
-              </div>
-            </div>
+          {isLoadingDraft ? (
+            <div className='loading-draft'>Загрузка вашего замечательного портфолио...</div>
           ) : (
-            <div className="dropped-blocks-container">
-              {droppedBlocks.map((block, idx) => (
-                <div 
-                  key={`${block.type}-${idx}`} 
-                  id={`editor-canvas-section-${block.type}`}
-                  className={`dropped-card-wrapper fade-in${
-                    isPortfolioNavDropdownOpen && block.type === 'nav' ? ' dropped-card-wrapper--nav-menu-open' : ''
-                  }`}
-                  draggable
-                  onDragStart={() => handleSortStart(idx)}
-                  onDragOver={(e) => handleSortOver(e, idx)}
-                  onDragEnd={handleSortEnd}
-                >
-                  <div
-                    className={`dropped-card
-                      ${block.type === 'nav' ? 'nav-card-full' : ''}
-                      ${block.type === 'main' ? 'main-card-full' : ''}
-                      ${block.type === 'about' ? 'about-card-full' : ''}
-                      ${block.type === 'projects' ? 'projects-card-full' : ''}
-                      ${block.type === 'skills' ? 'skills-card-full' : ''}
-                      ${block.type === 'experience' ? 'experience-card-full' : ''}
-                      ${block.type === 'footer' ? 'footer-card-full' : ''}
-                      ${block.type === 'github' ? 'github-card-full' : ''}
-                      ${block.type === 'custom' ? 'custom-card-full' : ''}`}
-                  >
-                    <div className="block-label-badge">{block.name}</div>
-                    {renderBlockContent(block, true, idx)}
-                    <button className="remove-block-btn" onClick={() => removeBlock(block.type)}>✕</button>
+            droppedBlocks.length === 0 ? (
+              <div className="empty-state">
+                <h3>Начните создавать свое портфолио</h3>
+                <p>Перетащите компоненты из левой боковой панели, чтобы создать идеальное портфолио разработчика.</p>
+                <div className="tip">Совет: Начните с Главного блока, чтобы представиться.</div>
+                <div className="placeholder">Перетащите элементы сюда — Ваше портфолио появится здесь</div>
+              </div>
+            ) : (
+              <div className="dropped-blocks-container">
+                {droppedBlocks.map((block, idx) => (
+                  <div key={idx} className="dropped-card-wrapper fade-in">
+                    <div
+                      className={`dropped-card
+                        ${block.type === 'nav' ? 'nav-card-full' : ''}
+                        ${block.type === 'main' ? 'main-card-full' : ''}
+                        ${block.type === 'about' ? 'about-card-full' : ''}
+                        ${block.type === 'projects' ? 'projects-card-full' : ''}
+                        ${block.type === 'skills' ? 'skills-card-full' : ''}
+                        ${block.type === 'experience' ? 'experience-card-full' : ''}
+                        ${block.type === 'reviews' ? 'reviews-card-full' : ''}
+                        ${block.type === 'footer' ? 'footer-card-full' : ''}
+                        ${block.type === 'github' ? 'github-card-full' : ''}
+                        ${block.type === 'custom' ? 'custom-card-full' : ''}`}
+                      style={!['nav', 'main', 'about', 'projects', 'skills', 'experience', 'reviews', 'footer', 'github', 'custom'].includes(block.type) ? { backgroundColor: block.bg } : {}}
+                    >
+                      <div className="block-label-badge">{block.name}</div>
+                      {renderBlockContent(block, true, idx)}
+                      <button className="remove-block-btn" onClick={() => removeBlock(block.type)} title="Удалить блок">✕</button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )
           )}
         </main>
       </div>
