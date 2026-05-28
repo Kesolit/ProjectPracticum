@@ -607,7 +607,6 @@
   object-fit: cover;
   display: block;
 }
-
 .main-block-unfolded {
   display: flex;
   flex-direction: column;
@@ -1511,4 +1510,14 @@
 .dropdown-logout:focus-visible {
   outline: 2px solid #e11d48;
   outline-offset: -4px;
+}
+
+.preview-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-btn img{
+  width: 17px;
 }

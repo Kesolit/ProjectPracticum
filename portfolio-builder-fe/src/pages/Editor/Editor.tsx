@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { savePortfolioDraft, getMyDraft } from "../../api/api";
 import './Editor.css'
 import logo from '../../assets/logo.svg'
+import eyeOn from '../../assets/eye-on.svg'
+import download from '../../assets/download.svg'
 import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
 import SaveSuccessModal from '../../components/SaveSuccessModal/SaveSuccessModal';
@@ -786,8 +788,8 @@ const Editor = () => {
           <span className="logo-text">dev/folio</span>
         </div>
         <div className="header-actions">
-          <button className="header-btn preview-btn" onClick={handlePreview}><span className="icon">👁</span> Предпросмотр</button>
-          <button className="header-btn" onClick={handleExport}><span className="icon">⬇</span> Экспорт</button>
+          <button className="header-btn preview-btn" onClick={handlePreview}><img src={eyeOn}/>Предпросмотр</button>
+          <button className="header-btn" onClick={handleExport}><img src={download}/> Экспорт</button>
           <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
           
           {isLoggedIn ? (

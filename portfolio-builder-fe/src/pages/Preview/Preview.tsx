@@ -17,7 +17,6 @@ const Preview = () => {
     return <div className="loading">Загрузка предпросмотра...</div>;
   }
 
-  // Точная копия renderBlock из PublicView.tsx (с поддержкой avatarUrl и logoImageUrl)
   const renderBlock = (block: any) => {
     const { type, content } = block;
 
@@ -25,6 +24,7 @@ const Preview = () => {
       case 'nav':
         return (
           <nav className="nav-container">
+
             <div className="nav-logo">
               {content?.logoImageUrl ? (
                 <img src={content.logoImageUrl} alt="" className="nav-logo-img" />
