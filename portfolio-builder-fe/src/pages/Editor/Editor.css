@@ -8,36 +8,91 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  background: #ffffff;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: #f9fafb;
 }
 
-/* ===== Хедер ===== */
+.loading-draft {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: 1.2rem;
+}
+
+.sidebar-item-main       { --bg-color: #EFF6FF; --accent-color: #3B82F6; }
+.sidebar-item-nav        { --bg-color: #ECFEFF; --accent-color: #06B6D4; }
+.sidebar-item-about      { --bg-color: #FAF5FF; --accent-color: #A855F7; }
+.sidebar-item-skills     { --bg-color: #ECFDF5; --accent-color: #10B981; }
+.sidebar-item-projects   { --bg-color: #FFF7ED; --accent-color: #F97316; }
+.sidebar-item-experience { --bg-color: #FFF1F2; --accent-color: #F43F5E; }
+.sidebar-item-footer     { --bg-color: #F1F5F9; --accent-color: #64748B; }
+.sidebar-item-github     { --bg-color: #EEF2FF; --accent-color: #6366F1; }
+.sidebar-item-custom     { --bg-color: #FDF4FF; --accent-color: #D946EF; }
+
+.block-card-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background-color: var(--bg-color, #f3f4f6);
+}
+
+.sidebar-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  transition: all 0.2s ease;
+}
+
+.block-card:active .block-card-icon-wrapper,
+.drag-cursor-block .block-card-icon-wrapper {
+  background-color: var(--accent-color) !important;
+  transition: all 0.2s ease;
+}
+
+.block-card:active .sidebar-icon-img,
+.drag-cursor-block .sidebar-icon-img {
+  filter: brightness(0) invert(1); 
+  transition: all 0.2s ease;
+}
+
+/* --- ИКОНКА ПЕРЕТАСКИВАНИЯ (точки) --- */
+.block-card:active .block-card-drag-handle img,
+.drag-cursor-block .block-card-drag-handle img {
+  background-color: var(--accent-color) !important;
+  -webkit-mask: url('../../assets/icons/points.svg') no-repeat center / contain;
+  mask: url('../../assets/icons/points.svg') no-repeat center / contain;
+  
+  object-position: -9999px; 
+  opacity: 1;
+}
+
+/* --- ТЕНЬ САМОГО БЛОКА --- */
+.block-card:active,
+.drag-cursor-block {
+  box-shadow: 0 6px 10px -5px color-mix(in srgb, var(--accent-color), transparent 60%) !important;
+  border-color: var(--accent-color) !important;
+}
+
+/* ===== Хедер (v50_435: 73px) ===== */
 .editor-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 24px;
-  height: 64px;
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
+  min-height: 73px;
+  height: auto;
+  box-sizing: border-box;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.logo-icon {
-  width: 42px;
-  height: 46px;
-}
-
-.logo-text {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
 }
 
 .header-actions {
@@ -47,28 +102,35 @@
 }
 
 .header-btn {
-  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
   background: transparent;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-family: inherit;
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   color: #374151;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .header-btn:hover {
-  background: #f9fafb;
+  background: #f3f4f6;
 }
 
 .save-btn {
-  background: #111827;
-  color: white;
+  background: #4f46e5;
+  color: #ffffff;
   border: none;
+  font-weight: 600;
 }
 
 .save-btn:hover {
-  background: #1f2937;
+  background: #4338ca;
 }
 
 /* ===== Кнопки авторизации ===== */
@@ -114,15 +176,16 @@
   display: flex;
   flex: 1;
   overflow: hidden;
-  height: calc(100vh - 64px);
+  min-height: 0;
+  height: calc(100vh - 73px);
 }
 
-/* ===== Левая панель (Сайдбар) ===== */
+/* ===== Сайдбар v50_364: 320px ===== */
 .sidebar {
-  width: 280px;
+  width: 320px;
   background: #ffffff;
-  border-right: 1px solid #e9ecef;
-  padding: 24px 16px;
+  border-right: 1px solid #e5e7eb;
+  padding: 24px;
   height: 100%;
   overflow-y: auto;
   flex-shrink: 0;
@@ -133,12 +196,16 @@
   font-weight: 600;
   color: #111827;
   margin-bottom: 8px;
+  letter-spacing: -0.01em;
 }
 
 .hint {
-  font-size: 13px;
-  color: #6c757d;
+  font-size: 14px;
+  font-weight: 400;
+  color: #4b5563;
+  line-height: 1.45;
   margin-bottom: 20px;
+  max-width: 272px;
 }
 
 .blocks-list {
@@ -151,12 +218,14 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  padding: 12px;
+  min-height: 78px;
+  border: 1px solid #ffffff;
+  border-radius: 12px;
+  padding: 11px 13px;
   cursor: grab;
-  transition: all 0.2s ease;
-  background: #ffffff; /* Обязательный фон, чтобы блоки было видно */
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .block-card:active {
@@ -164,8 +233,7 @@
 }
 
 .block-card:hover {
-  border-color: #dee2e6;
-  background: #f8f9fa;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
 .block-color-square {
@@ -181,18 +249,22 @@
 
 .block-text strong {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #111827;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
   margin-bottom: 4px;
+  line-height: 1.25;
 }
 
 .block-text small {
-  font-size: 12px;
-  color: #6c757d;
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: #9ca3af;
+  line-height: 1.3;
 }
 
-/* ===== Центральная область ===== */
+/* ===== Холст v50_410 ===== */
 .canvas {
   flex: 1;
   overflow-y: auto;
@@ -254,6 +326,13 @@
 
 .dropped-card-wrapper {
   width: 100%;
+  scroll-margin-top: 88px;
+}
+
+/* Пока открыт список «Разделы» у блока Навигация — поднимаем карточку над следующими (иначе меню уходит под соседей) */
+.dropped-card-wrapper--nav-menu-open {
+  position: relative;
+  z-index: 80;
 }
 
 .dropped-card {
@@ -337,7 +416,10 @@
   align-items: flex-start;
 }
 
-.nav-card-full { background-color: white !important; }
+.nav-card-full {
+  background-color: white !important;
+  overflow: visible;
+}
 .nav-layout-unfolded {
   display: flex;
   align-items: center;
@@ -364,20 +446,167 @@
   color: #adb5bd;
 }
 
-.nav-links-section {
-  display: flex;
-  gap: 12px;
+.nav-portfolio-dropdown {
+  position: relative;
+  flex-shrink: 0;
 }
 
-.nav-link-item {
-  font-size: 14px;
-  color: #6b7280;
-  background: #f9fafb;
-  padding: 6px 12px;
-  border-radius: 6px;
+.nav-portfolio-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
   border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+.nav-portfolio-dropdown-trigger:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.nav-portfolio-dropdown-trigger-label {
+  white-space: nowrap;
+}
+
+.nav-portfolio-dropdown-chevron {
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #6b7280;
+  transition: transform 0.2s ease;
+}
+
+.nav-portfolio-dropdown-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.nav-portfolio-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  max-width: min(280px, 70vw);
+  padding: 6px 0;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  z-index: 15;
+}
+
+.nav-portfolio-dropdown-empty {
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: #9ca3af;
+  max-width: 280px;
+}
+
+.nav-portfolio-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.nav-portfolio-dropdown-item:not(:last-child) {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.nav-portfolio-dropdown-item:hover {
+  background: #f9fafb;
+}
+
+.nav-portfolio-dropdown-item:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: -2px;
+}
+
+.nav-logo-section--upload {
+  justify-content: flex-start;
+  flex: 1;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.nav-logo-upload {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  max-width: min(220px, 55vw);
+  user-select: none;
+  position: relative;
+}
+
+.nav-logo-upload:focus-within .nav-logo-fallback,
+.nav-logo-upload:focus-within .nav-logo-preview {
+  outline: 2px solid #4f46e5;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.nav-logo-fallback {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.nav-logo-preview {
+  max-height: 40px;
+  max-width: 200px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.editor-block-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.avatar-upload-zone--has-image {
+  border-style: solid;
+  border-color: #e5e7eb;
+  background: #fff;
+  padding: 0;
+  overflow: hidden;
+}
+
+.main-avatar-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .main-block-unfolded {
   display: flex;
   flex-direction: column;
@@ -399,6 +628,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .avatar-upload-zone:hover {
@@ -457,6 +687,8 @@
   color: #9ca3af;
   resize: vertical;
   min-height: 60px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .drag-cursor-block {
@@ -512,6 +744,8 @@
   resize: none; 
   outline: none;
   transition: border-color 0.2s ease, background-color 0.2s ease;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .about-input-field:focus {
@@ -589,6 +823,8 @@
   resize: none;
   min-height: 50px;
   line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .add-project-btn {
@@ -828,6 +1064,8 @@
   resize: none;
   overflow: hidden;
   line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .exp-input-desc:focus,
@@ -1113,14 +1351,14 @@
 }
 
 
-/* ===== МЕНЮ ПРОФИЛЯ ПО МАКЕТУ ===== */
+/* ===== Меню профиля v408_1860 ===== */
 .profile-container {
   position: relative;
 }
 
 .profile-avatar-wrapper {
-  width: 40px;
-  height: 40px;
+  width: 35px;
+  height: 35px;
   border-radius: 50%;
   overflow: hidden;
   cursor: pointer;
@@ -1134,96 +1372,152 @@
   object-fit: cover;
 }
 
-/* Правильный hover на обертку, а не на саму картинку */
 .profile-avatar-wrapper:hover {
-  border-color: #515DEF;
+  border-color: #515def;
 }
 
 .user-dropdown-menu {
   position: absolute;
-  top: 50px;
+  top: calc(100% + 10px);
   right: 0;
   width: 260px;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
-  padding: 8px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(15, 23, 42, 0.06);
+  padding: 0;
   z-index: 1000;
-  border: 1px solid #f3f4f6;
+  overflow: hidden;
 }
 
 .dropdown-header {
-  padding: 12px 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
-/* Добавлен класс для Имени и Фамилии */
 .user-fullname {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
-  color: #111827;
+  color: #1f2937;
+  line-height: 1.25;
   word-break: break-word;
 }
 
 .user-email {
-  font-size: 13px;
-  color: #6b7280;
-  font-weight: 400;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+  line-height: 1.35;
 }
 
 .dropdown-divider {
   height: 1px;
   background: #f3f4f6;
-  margin: 4px 0;
+  margin: 0;
+  border: none;
 }
 
 .dropdown-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 16px;
+  min-height: 39px;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  text-align: left;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.15s ease;
 }
 
 .dropdown-item:hover {
   background: #f9fafb;
 }
 
+.dropdown-item:focus-visible {
+  outline: 2px solid #515def;
+  outline-offset: -2px;
+}
+
+.dropdown-item--plain-end {
+  justify-content: flex-start;
+}
+
 .item-content-left {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 14px;
-  color: #374151;
-  font-weight: 500;
+  min-width: 0;
+}
+
+.dropdown-item-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .item-icon-svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  display: block;
 }
 
 .item-arrow-svg {
   width: 12px;
   height: 12px;
-  opacity: 0.5;
+  flex-shrink: 0;
+  display: block;
+  opacity: 1;
 }
 
 .item-stats-count {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
-  color: #9ca3af;
+  color: #2563eb;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
-.dropdown-item.logout {
-  color: #ef4444;
-  font-weight: 600;
-  justify-content: flex-start;
+.dropdown-logout {
+  display: block;
+  width: 100%;
+  padding: 11px 16px 13px;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #e11d48;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
-.dropdown-item.logout:hover {
-  background: #fef2f2;
+.dropdown-logout:hover {
+  background: #fff1f2;
+}
+
+.dropdown-logout:focus-visible {
+  outline: 2px solid #e11d48;
+  outline-offset: -4px;
+}
+
+.preview-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-btn img{
+  width: 17px;
 }

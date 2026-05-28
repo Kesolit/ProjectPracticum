@@ -1,62 +1,21 @@
-import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
-import { getPublicPortfolio, API_BASE_URL } from '../../api/api' 
-import './PublicView.css'
+import { useState, useEffect } from 'react';
+import '../PublicView/PublicView.css'; 
 import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
 
-const PublicView = () => {
-  const { slug } = useParams<{ slug: string }>()
-  
-  const [portfolio, setPortfolio] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const hasPrinted = useRef(false); // Флаг, что печать уже запущена
-  const [isReady, setIsReady] = useState(false);
-
-  // Отслеживаем готовность данных к отображению
-  useEffect(() => {
-    if (!loading && portfolio !== null) {
-      setIsReady(true);
-    }
-  }, [loading, portfolio]);
-
-  // Печать только один раз после полной готовности
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('print') === 'true' && isReady && !hasPrinted.current) {
-      hasPrinted.current = true;
-      setTimeout(() => window.print(), 300);
-    }
-  }, [isReady]);
+const Preview = () => {
+  const [portfolio, setPortfolio] = useState<any>(null);
 
   useEffect(() => {
-    const loadPortfolio = async () => {
-      try {
-        if (slug) {
-          const data = await getPublicPortfolio(slug)
-          setPortfolio(data)
-        } else {
-          setError('Ссылка некорректна')
-        }
-      } catch (err: any) {
-        setError('Не удалось загрузить портфолио')
-      } finally {
-        setLoading(false)
-      }
+    const data = localStorage.getItem('portfolio_preview');
+    if (data) {
+      setPortfolio(JSON.parse(data));
     }
-    loadPortfolio()
-  }, [slug])
+  }, []);
 
-  const handleDownloadJsonResume = () => {
-    if (!slug) return;
-    const url = `${API_BASE_URL}/api/draft/resume/${slug}`;
-    // Открываем в новой вкладке (или сразу скачивание)
-    window.open(url, '_blank');
-  };
-  
-  if (loading) return <div className="loading">Загрузка стильного портфолио...</div>
-  if (error || !portfolio) return <div className="error">{error || 'Портфолио не найдено'}</div>
+  if (!portfolio) {
+    return <div className="loading">Загрузка предпросмотра...</div>;
+  }
 
   const renderBlock = (block: any) => {
     const { type, content } = block;
@@ -65,6 +24,7 @@ const PublicView = () => {
       case 'nav':
         return (
           <nav className="nav-container">
+
             <div className="nav-logo">
               {content?.logoImageUrl ? (
                 <img src={content.logoImageUrl} alt="" className="nav-logo-img" />
@@ -126,7 +86,9 @@ const PublicView = () => {
                   <div className="case-cover" style={{ background: i % 2 === 0 ? 'linear-gradient(135deg, #818CF8, #C084FC)' : 'linear-gradient(135deg, #34D399, #2DD4BF)' }}></div>
                   <div className="case-info">
                     <h4 className="case-title">{p.title}</h4>
-                    <a href={p.link} className="case-link">{p.link || 'github.com/link'}</a>
+                    <a href={p.link} className="case-link" target="_blank" rel="noreferrer">
+                      {p.link || 'github.com/link'}
+                    </a>
                     <p className="case-description">{p.description || p.desc}</p>
                   </div>
                 </div>
@@ -146,7 +108,9 @@ const PublicView = () => {
                   <div className="timeline-content">
                     <h4 className="exp-role">{exp.role}</h4>
                     <div className="exp-meta">
-                      <span className="exp-company">{exp.company}</span> <span className="exp-dot">•</span> <span className="exp-period">{exp.period}</span>
+                      <span className="exp-company">{exp.company}</span> 
+                      <span className="exp-dot">•</span> 
+                      <span className="exp-period">{exp.period}</span>
                     </div>
                     <p className="exp-desc">{exp.desc}</p>
                   </div>
@@ -175,16 +139,15 @@ const PublicView = () => {
       case 'github':
         return (
           <div className="section-container">
-            {/* Добавляем заголовок в едином стиле публичной страницы */}
             <h2 className="section-title">Мой OpenSource вклад</h2>
-            <GithubBlock content={content} readOnly />
+            <GithubBlock content={content} readOnly={true} />
           </div>
         );
 
       case 'custom':
         return (
           <div className="section-container">
-            <CustomBlock content={content} readOnly />
+            <CustomBlock content={content} readOnly={true} />
           </div>
         );
       
@@ -195,9 +158,9 @@ const PublicView = () => {
               © 2026 {content?.name || 'Алексей Иванов'}. Все права защищены.
             </div>
             <div className="footer-links">
-              {content?.github && <a href={content.github} target="_blank" rel="noopener noreferrer">GitHub</a>}
-              {content?.linkedin && <a href={content.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>}
-              {content?.telegram && <a href={content.telegram} target="_blank" rel="noopener noreferrer">Telegram</a>}
+              {content?.github && <a href={content.github} target="_blank" rel="noreferrer">GitHub</a>}
+              {content?.linkedin && <a href={content.linkedin} target="_blank" rel="noreferrer">LinkedIn</a>}
+              {content?.telegram && <a href={content.telegram} target="_blank" rel="noreferrer">Telegram</a>}
             </div>
           </footer>
         );
@@ -209,18 +172,14 @@ const PublicView = () => {
 
   return (
     <div className="public-view-container">
-      <div className="json-resume-download" style={{ textAlign: 'right', marginBottom: '1rem' }}>
-        <button onClick={handleDownloadJsonResume} className="btn-json-resume">
-          📄 Скачать в формате JSON Resume
-        </button>
-      </div>
+      <div className="preview-badge">Режим предпросмотра</div>
       {portfolio.sections?.map((block: any, index: number) => (
         <section key={index} className="portfolio-section">
           {renderBlock(block)}
         </section>
       ))}
     </div>
-  )
-}
+  );
+};
 
-export default PublicView
+export default Preview;

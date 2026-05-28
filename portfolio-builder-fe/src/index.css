@@ -7,3 +7,33 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
+
+.logo-icon,
+.login-logo-icon {
+  height: 46px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+
+.logo-text,
+.login-logo-text {
+  font-family: 'Red Hat Display', system-ui, -apple-system, sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 35px;
+  line-height: 150%;
+  letter-spacing: -0.01em;
+  color: #303030;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.editor-header .logo {
+  gap: 8px;
+}
+
+.login-logo,
+.register-header .logo {
+  gap: 12px;
+}

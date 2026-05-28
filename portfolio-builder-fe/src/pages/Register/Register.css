@@ -28,20 +28,6 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.logo-icon {
-  width: 32px; /* Фиксированный размер логотипа */
-  height: auto;
-  display: block;
-}
-
-.logo-text {
-  font-size: 22px;
-  font-weight: 700;
-  color: #111827;
-  letter-spacing: -0.5px;
 }
 
 /* Основной контент */

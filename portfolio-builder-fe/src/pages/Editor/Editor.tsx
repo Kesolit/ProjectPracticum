@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { savePortfolioDraft } from "../../api/api";
+import { savePortfolioDraft, getMyDraft } from "../../api/api";
 import './Editor.css'
 import logo from '../../assets/logo.svg'
+import eyeOn from '../../assets/eye-on.svg'
+import download from '../../assets/download.svg'
 import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
 import SaveSuccessModal from '../../components/SaveSuccessModal/SaveSuccessModal';
+import { sanitizeMultilineText } from '../../utils/multilineText'
 
 // Импорты иконок
 import mainIcon from '../../assets/icons/main.svg'
@@ -21,8 +24,8 @@ import pointsIcon from '../../assets/icons/points.svg'
 
 import iconLinkBlack from '../../assets/icon-link-black.svg'
 import iconArrow from '../../assets/icon-arrow.svg'
-import iconSettings from '../../assets/icon-settings.svg'
 import iconStatistics from '../../assets/icon-statistics.svg'
+import iconSettings from '../../assets/icon-settings.svg'
 
 interface BlockType {
   name: string
@@ -32,6 +35,19 @@ interface BlockType {
   bg?: string
   content?: any
 }
+
+/** Порядок блоков как в панели «Элементы конструктора» — выпадающее меню навигации следует ему */
+const EDITOR_BLOCK_CATALOG: BlockType[] = [
+  { name: 'Главный блок', desc: 'Хедер и приветствие', type: 'main', icon: mainIcon, bg: '#EFF6FF' },
+  { name: 'Навигация', desc: 'Верхнее меню', type: 'nav', icon: navIcon, bg: '#EBFDFF' },
+  { name: 'Раздел «Обо мне»', desc: 'Биография', type: 'about', icon: aboutIcon, bg: '#F9F5FF' },
+  { name: 'Раздел «Навыки»', desc: 'Техстек', type: 'skills', icon: skillsIcon, bg: '#EBFCF5' },
+  { name: 'Галерея проектов', desc: 'Кейсы', type: 'projects', icon: caseIcon, bg: '#FFF7ED' },
+  { name: 'История опыта', desc: 'Карьера', type: 'experience', icon: careerIcon, bg: '#FFF0F1' },
+  { name: 'Подвал (Футер)', desc: 'Контакты', type: 'footer', icon: footerIcon, bg: '#F0F5F8' },
+  { name: 'GitHub', desc: 'Виджет репозитория', type: 'github', icon: githubIcon, bg: '#EDF1FF' },
+  { name: 'Свободный блок', desc: 'Кастомный холст', type: 'custom', icon: customIcon, bg: '#FCF4FF' },
+]
 
 interface Project {
   id: number
@@ -53,6 +69,13 @@ interface FooterData {
   github: string;
   linkedin: string;
   telegram: string;
+}
+
+function readImageFileAsDataUrl(file: File, onLoaded: (dataUrl: string) => void) {
+  if (!file.type.startsWith('image/')) return
+  const reader = new FileReader()
+  reader.onload = () => onLoaded(reader.result as string)
+  reader.readAsDataURL(file)
 }
 
 // --- ПОД-КОМПОНЕНТЫ ---
@@ -102,7 +125,17 @@ const ProjectsBlock = ({ content, onChange }: { content: any, onChange: (data: a
               className="project-input-desc" 
               placeholder="Краткое описание технологий и задач..."
               value={project.desc}
-              onChange={(e) => updateProject(project.id, 'desc', e.target.value)}
+              onChange={(e) =>
+                updateProject(
+                  project.id,
+                  'desc',
+                  sanitizeMultilineText(e.target.value, {
+                    maxLength: 2500,
+                    maxTotalNewlines: 40,
+                    maxConsecutiveNewlines: 2,
+                  })
+                )
+              }
               rows={3}
             />
           </div>
@@ -222,7 +255,17 @@ const ExperienceBlock = ({ content, onChange }: { content: any, onChange: (data:
                 className="exp-input-desc" 
                 placeholder="Обязанности и достижения..." 
                 value={exp.desc}
-                onChange={(e) => updateExperience(exp.id, 'desc', e.target.value)}
+                onChange={(e) =>
+                  updateExperience(
+                    exp.id,
+                    'desc',
+                    sanitizeMultilineText(e.target.value, {
+                      maxLength: 3500,
+                      maxTotalNewlines: 50,
+                      maxConsecutiveNewlines: 2,
+                    })
+                  )
+                }
                 rows={1}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
@@ -277,10 +320,12 @@ const FooterBlock = ({ content, onChange }: { content: any, onChange: (data: any
 };
 
 
+
 // --- ГЛАВНЫЙ КОМПОНЕНТ РЕДАКТОРА ---
 
 const Editor = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isPortfolioNavDropdownOpen, setIsPortfolioNavDropdownOpen] = useState(false);
   const [userData, setUserData] = useState<any>(null);
   const [droppedBlocks, setDroppedBlocks] = useState<BlockType[]>([])
   const [draggedBlock, setDraggedBlock] = useState<BlockType | null>(null)
@@ -290,21 +335,37 @@ const Editor = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(true);
+  const [currentSlug, setCurrentSlug] = useState<string | null>(null);
   
   const navigate = useNavigate()
 
-  // Список доступных блоков. Возвращено свойство bg для страховки сайдбара
-  const blocks: BlockType[] = [
-    { name: 'Главный блок', desc: 'Хедер и приветствие', type: 'main', icon: mainIcon, bg: '#EFF6FF' },
-    { name: 'Навигация', desc: 'Верхнее меню', type: 'nav', icon: navIcon, bg: '#ECFEFF' },
-    { name: 'Обо мне', desc: 'Биография', type: 'about', icon: aboutIcon, bg: '#FAF5FF' },
-    { name: 'Навыки', desc: 'Технологии', type: 'skills', icon: skillsIcon, bg: '#ECFDF5' },
-    { name: 'Галерея проектов', desc: 'Кейсы', type: 'projects', icon: caseIcon, bg: '#FFF7ED' },
-    { name: 'История опыта', desc: 'Карьера', type: 'experience', icon: careerIcon, bg: '#FFF1F2' },
-    { name: 'Подвал', desc: 'Контакты', type: 'footer', icon: footerIcon, bg: '#F1F5F9' },
-    { name: 'Интеграция GitHub', desc: 'Репозиторий', type: 'github', icon: githubIcon, bg: '#EEF2FF' },
-    { name: 'Кастомный блок', desc: 'Свободное содержимое', type: 'custom', icon: customIcon, bg: '#FDF4FF' }
-  ]
+  const scrollElementIntoCanvasOrSidebar = useCallback((blockType: string) => {
+    requestAnimationFrame(() => {
+      const canvasEl = document.getElementById(`editor-canvas-section-${blockType}`)
+      if (canvasEl) {
+        canvasEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        return
+      }
+      const sidebarEl = document.querySelector(`[data-sidebar-block="${blockType}"]`)
+      if (sidebarEl) {
+        ;(sidebarEl as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    })
+  }, [])
+
+  const scrollFromPortfolioNavDropdown = useCallback(
+    (blockType: string) => {
+      setIsPortfolioNavDropdownOpen(false)
+      scrollElementIntoCanvasOrSidebar(blockType)
+    },
+    [scrollElementIntoCanvasOrSidebar]
+  )
+
+  const portfolioNavMenuItems = useMemo(() => {
+    const onCanvas = new Set(droppedBlocks.map((b) => b.type))
+    return EDITOR_BLOCK_CATALOG.filter((b) => onCanvas.has(b.type) && b.type !== 'nav')
+  }, [droppedBlocks])
 
   const handleSortStart = (index: number) => {
     setDraggedItemIndex(index);
@@ -327,12 +388,42 @@ const Editor = () => {
     setDraggedItemIndex(null);
   };
 
+    const handlePreview = () => {
+      // Сохраняем текущее состояние блоков во временное хранилище
+      const previewData = {
+        sections: droppedBlocks,
+        isPreview: true 
+      };
+      localStorage.setItem('portfolio_preview', JSON.stringify(previewData));
+      
+      // Открываем страницу предпросмотра в новой вкладке
+      window.open('/preview', '_blank');
+    };
+
   const updateBlockContent = (index: number, newContent: any) => {
-    setDroppedBlocks(prev => prev.map((block, i) => 
-      i === index ? { ...block, content: newContent } : block
-    ));
+      setDroppedBlocks(prev => prev.map((block, i) => 
+        i === index ? { ...block, content: newContent } : block
+      ));
+    };
+
+    const loadUserDraft = async () => {
+    try {
+      setIsLoadingDraft(true);
+      const response = await getMyDraft();
+      // Структура ответа: { success: true, data: { id, title, sections, updatedAt } }
+      if (response.success && response.data && response.data.sections) {
+        setDroppedBlocks(response.data.sections);
+      }
+    } catch (err) {
+      console.error("Не удалось загрузить черновик:", err);
+      // Если ошибка (например, нет черновика), просто оставляем пустую страницу
+    } finally {
+      setIsLoadingDraft(false);
+    }
   };
 
+  
+  
   const handleSave = async () => {
     try {
       const response = await savePortfolioDraft({
@@ -352,11 +443,41 @@ const Editor = () => {
     }
   };
 
+  const handleExport = async () => {
+    if (currentSlug) {
+      // Если портфолио уже сохранено – сразу открываем версию для печати
+      const printUrl = `${window.location.origin}/view/${currentSlug}?print=true`;
+      window.open(printUrl, '_blank');
+    } else {
+      // Если ещё не сохранено – сначала сохраняем, затем открываем печать
+      try {
+        const response = await savePortfolioDraft({
+          title: "Моё крутое портфолио",
+          sections: droppedBlocks
+        });
+        if (response && response.slug) {
+          setCurrentSlug(response.slug);
+          const printUrl = `${window.location.origin}/view/${response.slug}?print=true`;
+          window.open(printUrl, '_blank');
+        } else {
+          alert('Не удалось сохранить портфолио для экспорта.');
+        }
+      } catch (err: any) {
+        alert('Ошибка сохранения: ' + err.message);
+      }
+    }
+  };
+
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
       const isAuth = localStorage.getItem('isLoggedIn') === 'true';
       setIsLoggedIn(!!isAuth && !!token);
+      if (isAuth && token) {
+        loadUserDraft();
+      } else {
+        setIsLoadingDraft(false);
+      }
 
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
@@ -373,14 +494,16 @@ const Editor = () => {
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
-  // Закрытие меню при клике мимо
+  // Закрытие выпадающих меню при клике мимо
   useEffect(() => {
-    const handleGlobalClick = () => setIsMenuOpen(false);
-    if (isMenuOpen) {
-      document.addEventListener('click', handleGlobalClick);
-    }
+    if (!isMenuOpen && !isPortfolioNavDropdownOpen) return;
+    const handleGlobalClick = () => {
+      setIsMenuOpen(false);
+      setIsPortfolioNavDropdownOpen(false);
+    };
+    document.addEventListener('click', handleGlobalClick);
     return () => document.removeEventListener('click', handleGlobalClick);
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isPortfolioNavDropdownOpen]);
 
   // Функция рендера контента
   const renderBlockContent = (block: BlockType, isExpanded: boolean, index?: number) => {
@@ -389,18 +512,68 @@ const Editor = () => {
       if (block.type === 'nav') {
         return (
           <div className="nav-layout-unfolded">
-            <div className="nav-logo-section">
-              <div className="logo-placeholder-circle">+</div>
-              <input 
-                value={block.content?.logoText || 'МоёЛого.'} 
-                onChange={(e) => updateBlockContent(index, { ...block.content, logoText: e.target.value })}
-                style={{ background: 'transparent', border: 'none', color: 'black', fontWeight: 'bold', fontSize: '1.2rem', outline: 'none' }}
-              />
+            <div className="nav-logo-section nav-logo-section--upload">
+              <label className="nav-logo-upload" htmlFor={`nav-logo-file-${index}`}>
+                <input
+                  type="file"
+                  id={`nav-logo-file-${index}`}
+                  className="editor-block-file-input"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    readImageFileAsDataUrl(file, (url) => {
+                      updateBlockContent(index, { ...block.content, logoImageUrl: url })
+                      e.target.value = ''
+                    })
+                  }}
+                />
+                {block.content?.logoImageUrl ? (
+                  <img src={block.content.logoImageUrl} alt="" className="nav-logo-preview" />
+                ) : (
+                  <span className="nav-logo-fallback">МоёЛого.</span>
+                )}
+              </label>
             </div>
-            <div className="nav-links-section">
-              <div className="nav-link-item">Обо мне</div>
-              <div className="nav-link-item">Проекты</div>
-              <div className="nav-link-item">Контакты</div>
+            <div className="nav-portfolio-dropdown" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="nav-portfolio-dropdown-trigger"
+                aria-expanded={isPortfolioNavDropdownOpen}
+                aria-haspopup="menu"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMenuOpen(false);
+                  setIsPortfolioNavDropdownOpen((v) => !v);
+                }}
+              >
+                <span className="nav-portfolio-dropdown-trigger-label">Разделы</span>
+                <span className={`nav-portfolio-dropdown-chevron${isPortfolioNavDropdownOpen ? ' is-open' : ''}`} aria-hidden />
+              </button>
+              {isPortfolioNavDropdownOpen && (
+                <div className="nav-portfolio-dropdown-panel" role="menu">
+                  {portfolioNavMenuItems.length === 0 ? (
+                    <div className="nav-portfolio-dropdown-empty" role="presentation">
+                      Добавьте блоки с панели слева — здесь появятся ссылки в том же порядке, что в конструкторе.
+                    </div>
+                  ) : (
+                    portfolioNavMenuItems.map((b) => (
+                      <button
+                        key={b.type}
+                        type="button"
+                        role="menuitem"
+                        className="nav-portfolio-dropdown-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          scrollFromPortfolioNavDropdown(b.type);
+                        }}
+                      >
+                        {b.name}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
         );
@@ -409,9 +582,30 @@ const Editor = () => {
       if (block.type === 'main') {
         return (
           <div className="main-block-unfolded">
-            <div className="avatar-upload-zone">
-              <div className="avatar-placeholder">+</div>
-            </div>
+            <label
+              className={`avatar-upload-zone${block.content?.avatarUrl ? ' avatar-upload-zone--has-image' : ''}`}
+              htmlFor={`main-avatar-file-${index}`}
+            >
+              <input
+                type="file"
+                id={`main-avatar-file-${index}`}
+                className="editor-block-file-input"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  readImageFileAsDataUrl(file, (url) => {
+                    updateBlockContent(index, { ...block.content, avatarUrl: url })
+                    e.target.value = ''
+                  })
+                }}
+              />
+              {block.content?.avatarUrl ? (
+                <img src={block.content.avatarUrl} alt="" className="main-avatar-preview" />
+              ) : (
+                <span className="avatar-placeholder" aria-hidden>+</span>
+              )}
+            </label>
             <div className="main-content-inputs">
               <input 
                 type="text" 
@@ -432,7 +626,16 @@ const Editor = () => {
                 placeholder="Краткое описание вашего опыта и стека..." 
                 rows={2} 
                 value={block.content?.description || ''}
-                onChange={(e) => updateBlockContent(index, { ...block.content, description: e.target.value })}
+                onChange={(e) =>
+                  updateBlockContent(index, {
+                    ...block.content,
+                    description: sanitizeMultilineText(e.target.value, {
+                      maxLength: 3500,
+                      maxTotalNewlines: 45,
+                      maxConsecutiveNewlines: 2,
+                    }),
+                  })
+                }
               />
             </div>
           </div>
@@ -447,7 +650,15 @@ const Editor = () => {
               className="about-input-field"
               placeholder="Напишите здесь подробную информацию о вашем пути в IT..."
               value={block.content?.text || ''}
-              onChange={(e) => updateBlockContent(index, { text: e.target.value })}
+              onChange={(e) =>
+                updateBlockContent(index, {
+                  text: sanitizeMultilineText(e.target.value, {
+                    maxLength: 12000,
+                    maxTotalNewlines: 100,
+                    maxConsecutiveNewlines: 2,
+                  }),
+                })
+              }
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = 'auto';
@@ -467,23 +678,21 @@ const Editor = () => {
     }
 
     // 2. РЕНДЕР КАРТОЧКИ В САЙДБАРЕ
+    // Внутри renderBlockContent, секция для сайдбара:
     return (
       <>
-        {/* Иконка перетаскивания. Если pointsIcon не загрузится, будет виден этот квадрат */}
-        <div style={{ padding: '0 4px', color: '#9CA3AF', cursor: 'grab' }}>
-          {pointsIcon ? <img src={pointsIcon} alt="drag" /> : '⋮⋮'}
+        <div className="block-card-drag-handle">
+          {pointsIcon ? <img src={pointsIcon} className="drag-handle-img" alt="drag" /> : '⋮⋮'}
         </div>
-        
-        {/* Цветная обертка иконки */}
-        <div style={{ 
-          width: 36, height: 36, 
-          backgroundColor: block.bg || '#F3F4F6', 
-          borderRadius: 8, 
-          display: 'flex', alignItems: 'center', justifyContent: 'center' 
-        }}>
-          {block.icon && <img src={block.icon} alt={block.name} style={{ width: 18, height: 18 }} />}
+        <div className="block-card-icon-wrapper">
+          {block.icon && (
+            <img 
+              src={block.icon} 
+              alt={block.name} 
+              className="sidebar-icon-img" // Добавили класс
+            />
+          )}
         </div>
-        
         <div className="block-text">
           <strong>{block.name}</strong>
           <small>{block.desc}</small>
@@ -559,9 +768,17 @@ const Editor = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [isDragging])
 
-  // Безопасное получение Имени и Фамилии
   const userFirstName = userData?.name || userData?.firstName || 'Имя';
   const userLastName = userData?.surname || userData?.lastName || 'Фамилия';
+  const userDisplayName =
+    (typeof userData?.fullName === 'string' && userData.fullName.trim()) ||
+    [userData?.firstName, userData?.lastName].filter(Boolean).join(' ').trim() ||
+    `${userFirstName} ${userLastName}`.trim();
+  const portfolioViews =
+    userData?.totalViews ??
+    userData?.viewCount ??
+    userData?.portfolioViews ??
+    0;
 
   return (
     <div className="editor">
@@ -571,13 +788,13 @@ const Editor = () => {
           <span className="logo-text">dev/folio</span>
         </div>
         <div className="header-actions">
-          <button className="header-btn"><span className="icon">👁</span> Предпросмотр</button>
-          <button className="header-btn"><span className="icon">⬇</span> Экспорт</button>
+          <button className="header-btn preview-btn" onClick={handlePreview}><img src={eyeOn}/>Предпросмотр</button>
+          <button className="header-btn" onClick={handleExport}><img src={download}/> Экспорт</button>
           <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
           
           {isLoggedIn ? (
           <div className="profile-container">
-            <div className="profile-avatar-wrapper" onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }}>
+            <div className="profile-avatar-wrapper" onClick={(e) => { e.stopPropagation(); setIsPortfolioNavDropdownOpen(false); setIsMenuOpen(!isMenuOpen); }}>
               <img 
                 src="https://via.placeholder.com/40" 
                 alt="User" 
@@ -586,48 +803,66 @@ const Editor = () => {
             </div>
 
             {isMenuOpen && (
-              <div className="user-dropdown-menu" onClick={(e) => e.stopPropagation()}>
+              <div className="user-dropdown-menu" onClick={(e) => e.stopPropagation()} role="menu">
                 <div className="dropdown-header">
-                  <span className="user-fullname">
-                    {userFirstName} {userLastName}
-                  </span>
+                  <span className="user-fullname">{userDisplayName}</span>
                   <span className="user-email">{userData?.email || 'email@example.com'}</span>
                 </div>
-                
-                <div className="dropdown-divider"></div>
-                
-                {/* Моё портфолио */}
-                <div className="dropdown-item" onClick={() => { setIsMenuOpen(false); navigate('/dashboard'); }}>
-                  <div className="item-content-left">
-                    <img src={iconLinkBlack} alt="" className="item-icon-svg" />
-                    <span>Моё портфолио</span>
-                  </div>
-                  <img src={iconArrow} alt="" className="item-arrow-svg" />
-                </div>
 
-                {/* Статистика просмотров */}
-                <div className="dropdown-item" onClick={() => { setIsMenuOpen(false); navigate('/stats'); }}>
-                  <div className="item-content-left">
-                    <img src={iconStatistics} alt="" className="item-icon-svg" />
-                    <span>Статистика просмотров</span>
-                  </div>
-                  <span className="item-stats-count">0</span>
-                </div>
+                <div className="dropdown-divider" aria-hidden />
 
-                {/* Настройки аккаунта */}
-                <div className="dropdown-item" onClick={() => { setIsMenuOpen(false); navigate('/settings'); }}>
-                  <div className="item-content-left">
-                    <span style={{ marginLeft: '32px' }}>Настройки аккаунта</span>
-                  </div>
-                  <img src={iconArrow} alt="" className="item-arrow-svg" />
-                </div>
+                <button
+                  type="button"
+                  className="dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    navigate('/dashboard');
+                  }}
+                >
+                  <span className="item-content-left">
+                    <img src={iconLinkBlack} alt="" className="item-icon-svg" width={18} height={18} />
+                    <span className="dropdown-item-label">Моё портфолио</span>
+                  </span>
+                  <img src={iconArrow} alt="" className="item-arrow-svg" width={12} height={12} />
+                </button>
 
-                <div className="dropdown-divider"></div>
-                
-                {/* Выйти из аккаунта */}
-                <div className="dropdown-item logout" onClick={handleLogout}>
+                <button
+                  type="button"
+                  className="dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    navigate('/stats');
+                  }}
+                >
+                  <span className="item-content-left">
+                    <img src={iconStatistics} alt="" className="item-icon-svg" width={18} height={18} />
+                    <span className="dropdown-item-label">Статистика просмотров</span>
+                  </span>
+                  <span className="item-stats-count">{portfolioViews}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="dropdown-item dropdown-item--plain-end"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    navigate('/settings');
+                  }}
+                >
+                  <span className="item-content-left">
+                    <img src={iconSettings} alt="" className="item-icon-svg" width={18} height={18} />
+                    <span className="dropdown-item-label">Настройки аккаунта</span>
+                  </span>
+                </button>
+
+                <div className="dropdown-divider" aria-hidden />
+
+                <button type="button" className="dropdown-logout" role="menuitem" onClick={handleLogout}>
                   Выйти из аккаунта
-                </div>
+                </button>
               </div>
             )}
           </div>
@@ -645,10 +880,10 @@ const Editor = () => {
           <h2>Элементы конструктора</h2>
           <p className="hint">Перетащите блоки для создания портфолио</p>
           <div className="blocks-list">
-            {blocks.map((block, idx) => (
+            {EDITOR_BLOCK_CATALOG.map((block, idx) => (
               <div
                 key={idx}
-                className="block-card draggable"
+                className={`sidebar-item sidebar-item-${block.type} block-card draggable`}
                 draggable
                 onDragStart={(e) => handleDragStart(e, block)}
                 onDrag={handleDrag}
@@ -661,45 +896,42 @@ const Editor = () => {
         </aside>
 
         <main className="canvas" onDrop={handleDrop} onDragOver={handleDragOver}>
-          {droppedBlocks.length === 0 ? (
-            <div className="empty-state">
-              <h3>Начните создавать свое портфолио</h3>
-              <div className="tip">Совет: Начните с Главного блока, чтобы представиться.</div>
-              <p>Перетащите компоненты из левой боковой панели, чтобы создать идеальное портфолио разработчика. Меняйте их порядок по своему усмотрению!</p>
-              <div className="placeholder">
-                Перетащите элементы сюда. Ваше портфолио появится здесь
-              </div>
-            </div>
+          {isLoadingDraft ? (
+            <div className='loading-draft'>Загрузка вашего замечательного портфолио...</div>
           ) : (
-            <div className="dropped-blocks-container">
-              {droppedBlocks.map((block, idx) => (
-                <div 
-                  key={`${block.type}-${idx}`} 
-                  className="dropped-card-wrapper fade-in"
-                  draggable
-                  onDragStart={() => handleSortStart(idx)}
-                  onDragOver={(e) => handleSortOver(e, idx)}
-                  onDragEnd={handleSortEnd}
-                >
-                  <div
-                    className={`dropped-card
-                      ${block.type === 'nav' ? 'nav-card-full' : ''}
-                      ${block.type === 'main' ? 'main-card-full' : ''}
-                      ${block.type === 'about' ? 'about-card-full' : ''}
-                      ${block.type === 'projects' ? 'projects-card-full' : ''}
-                      ${block.type === 'skills' ? 'skills-card-full' : ''}
-                      ${block.type === 'experience' ? 'experience-card-full' : ''}
-                      ${block.type === 'footer' ? 'footer-card-full' : ''}
-                      ${block.type === 'github' ? 'github-card-full' : ''}
-                      ${block.type === 'custom' ? 'custom-card-full' : ''}`}
-                  >
-                    <div className="block-label-badge">{block.name}</div>
-                    {renderBlockContent(block, true, idx)}
-                    <button className="remove-block-btn" onClick={() => removeBlock(block.type)}>✕</button>
+            droppedBlocks.length === 0 ? (
+              <div className="empty-state">
+                <h3>Начните создавать свое портфолио</h3>
+                <p>Перетащите компоненты из левой боковой панели, чтобы создать идеальное портфолио разработчика.</p>
+                <div className="tip">Совет: Начните с Главного блока, чтобы представиться.</div>
+                <div className="placeholder">Перетащите элементы сюда — Ваше портфолио появится здесь</div>
+              </div>
+            ) : (
+              <div className="dropped-blocks-container">
+                {droppedBlocks.map((block, idx) => (
+                  <div key={idx} className="dropped-card-wrapper fade-in">
+                    <div
+                      className={`dropped-card
+                        ${block.type === 'nav' ? 'nav-card-full' : ''}
+                        ${block.type === 'main' ? 'main-card-full' : ''}
+                        ${block.type === 'about' ? 'about-card-full' : ''}
+                        ${block.type === 'projects' ? 'projects-card-full' : ''}
+                        ${block.type === 'skills' ? 'skills-card-full' : ''}
+                        ${block.type === 'experience' ? 'experience-card-full' : ''}
+                        ${block.type === 'reviews' ? 'reviews-card-full' : ''}
+                        ${block.type === 'footer' ? 'footer-card-full' : ''}
+                        ${block.type === 'github' ? 'github-card-full' : ''}
+                        ${block.type === 'custom' ? 'custom-card-full' : ''}`}
+                      style={!['nav', 'main', 'about', 'projects', 'skills', 'experience', 'reviews', 'footer', 'github', 'custom'].includes(block.type) ? { backgroundColor: block.bg } : {}}
+                    >
+                      <div className="block-label-badge">{block.name}</div>
+                      {renderBlockContent(block, true, idx)}
+                      <button className="remove-block-btn" onClick={() => removeBlock(block.type)} title="Удалить блок">✕</button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )
           )}
         </main>
       </div>
@@ -708,7 +940,7 @@ const Editor = () => {
 
       {isDragging && draggedBlock && (
         <div 
-          className="drag-cursor-block" 
+          className={`drag-cursor-block sidebar-item-${draggedBlock.type}`}
           style={{ 
             left: dragPosition.x, 
             top: dragPosition.y,
