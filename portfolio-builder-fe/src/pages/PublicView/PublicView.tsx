@@ -1,34 +1,66 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getPublicPortfolio, API_BASE_URL } from '../../api/api' 
+import { getPublicPortfolio } from '../../api/api' 
 import './PublicView.css'
 import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
 
+// --- НОВЫЙ КОМПОНЕНТ НАВИГАЦИИ ДЛЯ ПРЕДПРОСМОТРА ---
+const NavBlockPublic = ({ content, sections }: { content: any, sections: any[] }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Исключаем саму навигацию из выпадающего списка
+  const availableSections = sections.filter(s => s.type !== 'nav');
+
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, type: string) => {
+    e.preventDefault();
+    const target = document.getElementById(`section-${type}`);
+    if (target) {
+      // Плавная прокрутка к нужному блоку
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsOpen(false);
+  };
+
+  return (
+    <nav className="nav-container">
+      <div className="nav-logo">{content?.logo || content?.logoText || 'МоёЛого.'}</div>
+      
+      <div 
+        className="nav-dropdown-wrapper"
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+      >
+        <div className="nav-dropdown-trigger">
+          Разделы <span style={{ fontSize: '10px' }}>▼</span>
+        </div>
+        
+        {isOpen && (
+          <div className="nav-dropdown-menu">
+            {availableSections.map((item, idx) => (
+              <a 
+                key={idx} 
+                href={`#section-${item.type}`} 
+                className="nav-dropdown-item"
+                onClick={(e) => scrollToSection(e, item.type)}
+              >
+                {item.name || item.type}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+// --- ГЛАВНЫЙ КОМПОНЕНТ ---
 const PublicView = () => {
   const { slug } = useParams<{ slug: string }>()
   
   const [portfolio, setPortfolio] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const hasPrinted = useRef(false); // Флаг, что печать уже запущена
-  const [isReady, setIsReady] = useState(false);
-
-  // Отслеживаем готовность данных к отображению
-  useEffect(() => {
-    if (!loading && portfolio !== null) {
-      setIsReady(true);
-    }
-  }, [loading, portfolio]);
-
-  // Печать только один раз после полной готовности
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('print') === 'true' && isReady && !hasPrinted.current) {
-      hasPrinted.current = true;
-      setTimeout(() => window.print(), 300);
-    }
-  }, [isReady]);
 
   useEffect(() => {
     const loadPortfolio = async () => {
@@ -47,46 +79,23 @@ const PublicView = () => {
     }
     loadPortfolio()
   }, [slug])
-
-  const handleDownloadJsonResume = () => {
-    if (!slug) return;
-    const url = `${API_BASE_URL}/api/draft/resume/${slug}`;
-    // Открываем в новой вкладке (или сразу скачивание)
-    window.open(url, '_blank');
-  };
   
   if (loading) return <div className="loading">Загрузка стильного портфолио...</div>
   if (error || !portfolio) return <div className="error">{error || 'Портфолио не найдено'}</div>
 
-  const renderBlock = (block: any) => {
+  // Обратите внимание, что мы передаем allSections для навигации
+  const renderBlock = (block: any, allSections: any[]) => {
     const { type, content } = block;
 
     switch (type) {
       case 'nav':
-        return (
-          <nav className="nav-container">
-            <div className="nav-logo">
-              {content?.logoImageUrl ? (
-                <img src={content.logoImageUrl} alt="" className="nav-logo-img" />
-              ) : (
-                content?.logo || content?.logoText || 'МоёЛого.'
-              )}
-            </div>
-            <div className="nav-links">
-              <span>Обо мне</span><span>Проекты</span>
-            </div>
-          </nav>
-        );
+        return <NavBlockPublic content={content} sections={allSections} />;
       
       case 'main':
         return (
           <div className="main-block-public">
             <div className="main-avatar">
-              {content?.avatarUrl ? (
-                <img src={content.avatarUrl} alt="" className="main-avatar-img" />
-              ) : (
-                <span role="img" aria-label="avatar">👨‍💻</span>
-              )}
+              <span role="img" aria-label="avatar">👨‍💻</span>
             </div>
             <h1>{content?.greeting || 'Привет, я Алексей Иванов'}</h1>
             <h3 className="main-role">{content?.role || 'Frontend Разработчик'}</h3>
@@ -175,7 +184,6 @@ const PublicView = () => {
       case 'github':
         return (
           <div className="section-container">
-            {/* Добавляем заголовок в едином стиле публичной страницы */}
             <h2 className="section-title">Мой OpenSource вклад</h2>
             <GithubBlock content={content} readOnly />
           </div>
@@ -209,14 +217,10 @@ const PublicView = () => {
 
   return (
     <div className="public-view-container">
-      <div className="json-resume-download" style={{ textAlign: 'right', marginBottom: '1rem' }}>
-        <button onClick={handleDownloadJsonResume} className="btn-json-resume">
-          📄 Скачать в формате JSON Resume
-        </button>
-      </div>
       {portfolio.sections?.map((block: any, index: number) => (
-        <section key={index} className="portfolio-section">
-          {renderBlock(block)}
+        // Добавлен id для работы якорных ссылок
+        <section key={index} id={`section-${block.type}`} className="portfolio-section">
+          {renderBlock(block, portfolio.sections)}
         </section>
       ))}
     </div>

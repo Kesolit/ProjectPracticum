@@ -3,6 +3,60 @@ import '../PublicView/PublicView.css';
 import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
 
+// --- НОВЫЙ КОМПОНЕНТ НАВИГАЦИИ ДЛЯ ПРЕДПРОСМОТРА ---
+const NavBlockPreview = ({ content, sections }: { content: any, sections: any[] }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Исключаем саму навигацию из выпадающего списка
+  const availableSections = sections.filter(s => s.type !== 'nav');
+
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, type: string) => {
+    e.preventDefault();
+    const target = document.getElementById(`section-${type}`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsOpen(false);
+  };
+
+  return (
+    <nav className="nav-container">
+      <div className="nav-logo">
+        {content?.logoImageUrl ? (
+          <img src={content.logoImageUrl} alt="" className="nav-logo-img" />
+        ) : (
+          content?.logo || content?.logoText || 'МоёЛого.'
+        )}
+      </div>
+      
+      <div 
+        className="nav-dropdown-wrapper"
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+      >
+        <div className="nav-dropdown-trigger">
+          Разделы <span style={{ fontSize: '10px' }}>▼</span>
+        </div>
+        
+        {isOpen && (
+          <div className="nav-dropdown-menu">
+            {availableSections.map((item, idx) => (
+              <a 
+                key={idx} 
+                href={`#section-${item.type}`} 
+                className="nav-dropdown-item"
+                onClick={(e) => scrollToSection(e, item.type)}
+              >
+                {item.name || item.type}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+};
+
 const Preview = () => {
   const [portfolio, setPortfolio] = useState<any>(null);
 
@@ -22,21 +76,8 @@ const Preview = () => {
 
     switch (type) {
       case 'nav':
-        return (
-          <nav className="nav-container">
-
-            <div className="nav-logo">
-              {content?.logoImageUrl ? (
-                <img src={content.logoImageUrl} alt="" className="nav-logo-img" />
-              ) : (
-                content?.logo || content?.logoText || 'МоёЛого.'
-              )}
-            </div>
-            <div className="nav-links">
-              <span>Обо мне</span><span>Проекты</span>
-            </div>
-          </nav>
-        );
+        // Передаем массив секций из твоего стейта portfolio
+        return <NavBlockPreview content={content} sections={portfolio.sections || []} />;
       
       case 'main':
         return (
@@ -174,7 +215,8 @@ const Preview = () => {
     <div className="public-view-container">
       <div className="preview-badge">Режим предпросмотра</div>
       {portfolio.sections?.map((block: any, index: number) => (
-        <section key={index} className="portfolio-section">
+        // Добавлен id для работы якорных ссылок
+        <section key={index} id={`section-${block.type}`} className="portfolio-section">
           {renderBlock(block)}
         </section>
       ))}
