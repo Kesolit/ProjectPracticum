@@ -19,11 +19,17 @@ import githubIcon from '../../assets/icons/github.svg'
 import customIcon from '../../assets/icons/custom.svg'
 import pointsIcon from '../../assets/icons/points.svg'
 
+import iconLinkBlack from '../../assets/icon-link-black.svg'
+import iconArrow from '../../assets/icon-arrow.svg'
+import iconSettings from '../../assets/icon-settings.svg'
+import iconStatistics from '../../assets/icon-statistics.svg'
+
 interface BlockType {
   name: string
   desc: string
   type: string
-  icon: string // Теперь здесь путь к SVG
+  icon: string
+  bg?: string
   content?: any
 }
 
@@ -274,6 +280,8 @@ const FooterBlock = ({ content, onChange }: { content: any, onChange: (data: any
 // --- ГЛАВНЫЙ КОМПОНЕНТ РЕДАКТОРА ---
 
 const Editor = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
   const [droppedBlocks, setDroppedBlocks] = useState<BlockType[]>([])
   const [draggedBlock, setDraggedBlock] = useState<BlockType | null>(null)
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 })
@@ -285,17 +293,17 @@ const Editor = () => {
   
   const navigate = useNavigate()
 
-  // Список доступных блоков (БЕЗ ОТЗЫВОВ)
+  // Список доступных блоков. Возвращено свойство bg для страховки сайдбара
   const blocks: BlockType[] = [
-    { name: 'Главный блок', desc: 'Хедер и приветствие', type: 'main', icon: mainIcon },
-    { name: 'Навигация', desc: 'Верхнее меню', type: 'nav', icon: navIcon },
-    { name: 'Обо мне', desc: 'Биография', type: 'about', icon: aboutIcon },
-    { name: 'Навыки', desc: 'Технологии', type: 'skills', icon: skillsIcon },
-    { name: 'Галерея проектов', desc: 'Кейсы', type: 'projects', icon: caseIcon },
-    { name: 'История опыта', desc: 'Карьера', type: 'experience', icon: careerIcon },
-    { name: 'Подвал', desc: 'Контакты', type: 'footer', icon: footerIcon },
-    { name: 'Интеграция GitHub', desc: 'Репозиторий', type: 'github', icon: githubIcon },
-    { name: 'Кастомный блок', desc: 'Свободное содержимое', type: 'custom', icon: customIcon }
+    { name: 'Главный блок', desc: 'Хедер и приветствие', type: 'main', icon: mainIcon, bg: '#EFF6FF' },
+    { name: 'Навигация', desc: 'Верхнее меню', type: 'nav', icon: navIcon, bg: '#ECFEFF' },
+    { name: 'Обо мне', desc: 'Биография', type: 'about', icon: aboutIcon, bg: '#FAF5FF' },
+    { name: 'Навыки', desc: 'Технологии', type: 'skills', icon: skillsIcon, bg: '#ECFDF5' },
+    { name: 'Галерея проектов', desc: 'Кейсы', type: 'projects', icon: caseIcon, bg: '#FFF7ED' },
+    { name: 'История опыта', desc: 'Карьера', type: 'experience', icon: careerIcon, bg: '#FFF1F2' },
+    { name: 'Подвал', desc: 'Контакты', type: 'footer', icon: footerIcon, bg: '#F1F5F9' },
+    { name: 'Интеграция GitHub', desc: 'Репозиторий', type: 'github', icon: githubIcon, bg: '#EEF2FF' },
+    { name: 'Кастомный блок', desc: 'Свободное содержимое', type: 'custom', icon: customIcon, bg: '#FDF4FF' }
   ]
 
   const handleSortStart = (index: number) => {
@@ -349,13 +357,32 @@ const Editor = () => {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
       const isAuth = localStorage.getItem('isLoggedIn') === 'true';
       setIsLoggedIn(!!isAuth && !!token);
+
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          setUserData(JSON.parse(storedUser));
+        } catch (e) {
+          console.error("Ошибка парсинга данных пользователя", e);
+        }
+      }
     };
+
     checkAuth();
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
-  }, [])
+  }, []);
 
-  // Функция рендера контента (сайдбар vs рабочая область)
+  // Закрытие меню при клике мимо
+  useEffect(() => {
+    const handleGlobalClick = () => setIsMenuOpen(false);
+    if (isMenuOpen) {
+      document.addEventListener('click', handleGlobalClick);
+    }
+    return () => document.removeEventListener('click', handleGlobalClick);
+  }, [isMenuOpen]);
+
+  // Функция рендера контента
   const renderBlockContent = (block: BlockType, isExpanded: boolean, index?: number) => {
     // 1. РЕНДЕР РАЗВЕРНУТОГО БЛОКА В КАНВАСЕ
     if (isExpanded && index !== undefined) {
@@ -367,7 +394,7 @@ const Editor = () => {
               <input 
                 value={block.content?.logoText || 'МоёЛого.'} 
                 onChange={(e) => updateBlockContent(index, { ...block.content, logoText: e.target.value })}
-                style={{ background: 'transparent', border: 'none', color: 'white', fontWeight: 'bold', fontSize: '1.2rem', outline: 'none' }}
+                style={{ background: 'transparent', border: 'none', color: 'black', fontWeight: 'bold', fontSize: '1.2rem', outline: 'none' }}
               />
             </div>
             <div className="nav-links-section">
@@ -439,15 +466,24 @@ const Editor = () => {
       if (block.type === 'custom') return <CustomBlock content={block.content} onChange={(data) => updateBlockContent(index, data)} />;
     }
 
-    // 2. РЕНДЕР КАРТОЧКИ В САЙДБАРЕ (С ИКОНКАМИ)
+    // 2. РЕНДЕР КАРТОЧКИ В САЙДБАРЕ
     return (
       <>
-        <div className="block-card-drag-handle">
-          <img src={pointsIcon} alt="drag handle" />
+        {/* Иконка перетаскивания. Если pointsIcon не загрузится, будет виден этот квадрат */}
+        <div style={{ padding: '0 4px', color: '#9CA3AF', cursor: 'grab' }}>
+          {pointsIcon ? <img src={pointsIcon} alt="drag" /> : '⋮⋮'}
         </div>
-        <div className="block-card-icon-wrapper">
-          <img src={block.icon} alt={block.name} className="sidebar-icon-img" />
+        
+        {/* Цветная обертка иконки */}
+        <div style={{ 
+          width: 36, height: 36, 
+          backgroundColor: block.bg || '#F3F4F6', 
+          borderRadius: 8, 
+          display: 'flex', alignItems: 'center', justifyContent: 'center' 
+        }}>
+          {block.icon && <img src={block.icon} alt={block.name} style={{ width: 18, height: 18 }} />}
         </div>
+        
         <div className="block-text">
           <strong>{block.name}</strong>
           <small>{block.desc}</small>
@@ -461,6 +497,7 @@ const Editor = () => {
   const handleLogout = () => {
     localStorage.clear();
     setIsLoggedIn(false);
+    setIsMenuOpen(false);
     navigate('/login');
   };
 
@@ -522,6 +559,10 @@ const Editor = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [isDragging])
 
+  // Безопасное получение Имени и Фамилии
+  const userFirstName = userData?.name || userData?.firstName || 'Имя';
+  const userLastName = userData?.surname || userData?.lastName || 'Фамилия';
+
   return (
     <div className="editor">
       <header className="editor-header">
@@ -535,12 +576,61 @@ const Editor = () => {
           <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
           
           {isLoggedIn ? (
-            <div className="profile-wrapper" onClick={handleLogout}>
-              <div className="profile-avatar-container">
-                <img src="https://via.placeholder.com/40" alt="User" className="profile-avatar" />
-                <div className="logout-overlay">Выйти</div>
-              </div>
+          <div className="profile-container">
+            <div className="profile-avatar-wrapper" onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }}>
+              <img 
+                src="https://via.placeholder.com/40" 
+                alt="User" 
+                className="profile-avatar"
+              />
             </div>
+
+            {isMenuOpen && (
+              <div className="user-dropdown-menu" onClick={(e) => e.stopPropagation()}>
+                <div className="dropdown-header">
+                  <span className="user-fullname">
+                    {userFirstName} {userLastName}
+                  </span>
+                  <span className="user-email">{userData?.email || 'email@example.com'}</span>
+                </div>
+                
+                <div className="dropdown-divider"></div>
+                
+                {/* Моё портфолио */}
+                <div className="dropdown-item" onClick={() => { setIsMenuOpen(false); navigate('/dashboard'); }}>
+                  <div className="item-content-left">
+                    <img src={iconLinkBlack} alt="" className="item-icon-svg" />
+                    <span>Моё портфолио</span>
+                  </div>
+                  <img src={iconArrow} alt="" className="item-arrow-svg" />
+                </div>
+
+                {/* Статистика просмотров */}
+                <div className="dropdown-item" onClick={() => { setIsMenuOpen(false); navigate('/stats'); }}>
+                  <div className="item-content-left">
+                    <img src={iconStatistics} alt="" className="item-icon-svg" />
+                    <span>Статистика просмотров</span>
+                  </div>
+                  <span className="item-stats-count">0</span>
+                </div>
+
+                {/* Настройки аккаунта */}
+                <div className="dropdown-item" onClick={() => { setIsMenuOpen(false); navigate('/settings'); }}>
+                  <div className="item-content-left">
+                    <span style={{ marginLeft: '32px' }}>Настройки аккаунта</span>
+                  </div>
+                  <img src={iconArrow} alt="" className="item-arrow-svg" />
+                </div>
+
+                <div className="dropdown-divider"></div>
+                
+                {/* Выйти из аккаунта */}
+                <div className="dropdown-item logout" onClick={handleLogout}>
+                  Выйти из аккаунта
+                </div>
+              </div>
+            )}
+          </div>
           ) : (
             <div className="auth-group">
               <button className="header-btn login-link-btn" onClick={() => navigate('/login')}>Войти</button>
@@ -558,7 +648,7 @@ const Editor = () => {
             {blocks.map((block, idx) => (
               <div
                 key={idx}
-                className={`block-card draggable sidebar-item-${block.type}`}
+                className="block-card draggable"
                 draggable
                 onDragStart={(e) => handleDragStart(e, block)}
                 onDrag={handleDrag}
@@ -575,12 +665,9 @@ const Editor = () => {
             <div className="empty-state">
               <h3>Начните создавать свое портфолио</h3>
               <div className="tip">Совет: Начните с Главного блока, чтобы представиться.</div>
-              <p>Перетащите компоненты из левой боковой панели, чтобы создать 
-идеальное портфолио разработчика. Меняйте их порядок по своему 
-усмотрению!</p>
+              <p>Перетащите компоненты из левой боковой панели, чтобы создать идеальное портфолио разработчика. Меняйте их порядок по своему усмотрению!</p>
               <div className="placeholder">
-                Перетащите элементы сюда.
-                Ваше портфолио появится здесь
+                Перетащите элементы сюда. Ваше портфолио появится здесь
               </div>
             </div>
           ) : (
@@ -621,17 +708,16 @@ const Editor = () => {
 
       {isDragging && draggedBlock && (
         <div 
-          className={`drag-cursor-block sidebar-item-${draggedBlock.type}`} 
+          className="drag-cursor-block" 
           style={{ 
             left: dragPosition.x, 
             top: dragPosition.y,
             position: 'fixed',
             pointerEvents: 'none',
-            transform: 'translate(-50%, -50%)', // Центрируем блок под курсором
+            transform: 'translate(-50%, -50%)',
             zIndex: 1000
           }}
         >
-          {/* Вторым аргументом передаем false, так как это вид для сайдбара/перетаскивания */}
           {renderBlockContent(draggedBlock, false)}
         </div>
       )}

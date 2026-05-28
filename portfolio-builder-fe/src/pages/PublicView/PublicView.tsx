@@ -33,7 +33,6 @@ const PublicView = () => {
   if (loading) return <div className="loading">Загрузка стильного портфолио...</div>
   if (error || !portfolio) return <div className="error">{error || 'Портфолио не найдено'}</div>
 
-  // 👇 ДАЛЕЕ ИДЕТ ПОЛНОСТЬЮ НОВЫЙ ДИЗАЙН ВАШЕГО ФРОНТЕНДЕРА 👇
   const renderBlock = (block: any) => {
     const { type, content } = block;
 

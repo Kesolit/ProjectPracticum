@@ -12,7 +12,7 @@
   background: #ffffff;
 }
 
-/* ===== Хеддер ===== */
+/* ===== Хедер ===== */
 .editor-header {
   display: flex;
   justify-content: space-between;
@@ -71,29 +71,7 @@
   background: #1f2937;
 }
 
-.profile-btn {
-  width: 36px;
-  height: 36px;
-  border: 1px solid #e5e7eb;
-  background: white;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.profile-btn:hover {
-  background: #f9fafb;
-  border-color: #515DEF;
-}
-
-.profile-icon {
-  font-size: 18px;
-}
-
-/* ===== Стили для кнопок авторизации ===== */
+/* ===== Кнопки авторизации ===== */
 .auth-group {
   display: flex;
   gap: 8px;
@@ -131,26 +109,6 @@
   border-color: #4046c9;
 }
 
-/* ===== Стили для профиля ===== */
-.profile-wrapper {
-  display: flex;
-  align-items: center;
-}
-
-.profile-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  cursor: pointer;
-  border: 2px solid #e5e7eb;
-  transition: all 0.2s ease;
-}
-
-.profile-avatar:hover {
-  border-color: #515DEF;
-}
-
 /* ===== Основное содержание ===== */
 .editor-main {
   display: flex;
@@ -159,7 +117,7 @@
   height: calc(100vh - 64px);
 }
 
-/* ===== Левая панель ===== */
+/* ===== Левая панель (Сайдбар) ===== */
 .sidebar {
   width: 280px;
   background: #ffffff;
@@ -198,6 +156,7 @@
   padding: 12px;
   cursor: grab;
   transition: all 0.2s ease;
+  background: #ffffff; /* Обязательный фон, чтобы блоки было видно */
 }
 
 .block-card:active {
@@ -206,6 +165,7 @@
 
 .block-card:hover {
   border-color: #dee2e6;
+  background: #f8f9fa;
 }
 
 .block-color-square {
@@ -304,8 +264,7 @@
   border-radius: 8px;
   padding: 36px 24px 24px; 
   background: white;
-  box-shadow: none; 
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   position: relative;
   width: 100%;
   box-sizing: border-box;
@@ -314,6 +273,8 @@
 .dropped-card:hover,
 .dropped-card:focus-within {
   border-color: #bfdbfe; 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .block-label-badge {
@@ -330,182 +291,7 @@
   letter-spacing: 0.3px;
 }
 
-/* Базовые стили для обертки иконки в сайдбаре */
-.block-card-icon-wrapper {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.sidebar-icon-img {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-}
-
-/* 1. Определяем цвета для каждого типа блока через переменные */
-.sidebar-item-main       { --bg-color: #EFF6FF; --accent-color: #3B82F6; --border-color: #3B82F6;}
-.sidebar-item-nav        { --bg-color: #ECFEFF; --accent-color: #06B6D4; --border-color: #06B6D4;}
-.sidebar-item-about      { --bg-color: #FAF5FF; --accent-color: #A855F7; --border-color: #A855F7;}
-.sidebar-item-skills     { --bg-color: #ECFDF5; --accent-color: #10B981; --border-color: #10B981;}
-.sidebar-item-projects   { --bg-color: #FFF7ED; --accent-color: #F97316; --border-color: #F97316;}
-.sidebar-item-experience { --bg-color: #FFF1F2; --accent-color: #F43F5E; --border-color: #F43F5E;}
-.sidebar-item-footer     { --bg-color: #F1F5F9; --accent-color: #64748B; --border-color: #64748B;}
-.sidebar-item-github     { --bg-color: #EEF2FF; --accent-color: #6366F1; --border-color: #6366F1;}
-.sidebar-item-custom     { --bg-color: #FDF4FF; --accent-color: #D946EF; --border-color: #D946EF;}
-
-.sidebar-icon-img {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  transition: all 0.2s ease;
-}
-
-.block-card:active .sidebar-icon-img,
-.drag-cursor-block .sidebar-icon-img {
-  filter: brightness(0) invert(1);
-}
-
-/* 3. СОСТОЯНИЕ ПРИ НАЖАТИИ (Swap) */
-/* Когда мы кликаем на блок в сайдбаре ИЛИ когда блок находится под курсором при перетаскивании */
-.block-card:active .block-card-icon-wrapper,
-.drag-cursor-block .block-card-icon-wrapper {
-  background-color: var(--accent-color) !important; /* Фон становится ярким */
-}
-
-.block-card:active,
-.drag-cursor-block {
-  /* Создаем полупрозрачную тень цвета обводки (accent) */
-  box-shadow: 0 4px 8px -4px var(--accent-color);
-  border-color: var(--accent-color) !important;
-  cursor: grabbing;
-}
-
-.block-card:active .block-card-drag-handle img,
-.drag-cursor-block .block-card-drag-handle img {
-  background-color: var(--accent-color) !important;
-  -webkit-mask: url('../../assets/icons/points.svg') no-repeat center / contain;
-  mask: url('../../assets/icons/points.svg') no-repeat center / contain;
-  
-  object-position: -9999px; 
-  opacity: 1;
-}
-
-/* Настройка цветов для каждого типа блока */
-
-/* Главный блок */
-.sidebar-item-main .block-card-icon-wrapper {
-  background-color: #EFF6FF;
-}
-
-/* Навигация */
-.sidebar-item-nav .block-card-icon-wrapper {
-  background-color: #ECFEFF;
-}
-
-/* Обо мне */
-.sidebar-item-about .block-card-icon-wrapper {
-  background-color: #FAF5FF;
-}
-
-/* Навыки */
-.sidebar-item-skills .block-card-icon-wrapper {
-  background-color: #ECFDF5;
-}
-
-/* Галерея проектов (кейсы) */
-.sidebar-item-projects .block-card-icon-wrapper {
-  background-color: #FFF7ED;
-}
-
-/* История опыта (карьера) */
-.sidebar-item-experience .block-card-icon-wrapper {
-  background-color: #FFF1F2;
-}
-
-/* Подвал */
-.sidebar-item-footer .block-card-icon-wrapper {
-  background-color: #F1F5F9;
-}
-
-/* Гитхаб */
-.sidebar-item-github .block-card-icon-wrapper {
-  background-color: #EEF2FF;
-}
-
-/* Кастомный (свободный) блок */
-.sidebar-item-custom .block-card-icon-wrapper {
-  background-color: #FDF4FF;
-}
-
-.remove-block-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: #f3f4f6;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  color: #6b7280;
-  opacity: 0;
-  z-index: 10;
-}
-
-.dropped-card:hover .remove-block-btn {
-  opacity: 1;
-}
-
-.remove-block-btn:hover {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.dropped-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.dropped-card.main-card-full {
-  min-height: 300px;
-  align-items: flex-start;
-}
-
-.dropped-color-square {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-.dropped-text {
-  flex: 1;
-}
-
-.dropped-text strong {
-  display: block;
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 8px;
-}
-
-.dropped-text p {
-  font-size: 14px;
-  color: #6c757d;
-  margin: 0;
-}
-
+/* Единственная правильная кнопка удаления */
 .remove-block-btn {
   position: absolute;
   top: 12px;
@@ -516,12 +302,18 @@
   background: white;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  color: #6c757d;
+  color: #9ca3af;
+  opacity: 0;
+  z-index: 10;
+}
+
+.dropped-card:hover .remove-block-btn {
+  opacity: 1;
 }
 
 .remove-block-btn:hover {
@@ -535,21 +327,17 @@
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== Стили для раскладки навигации (nav-card) ===== */
-.nav-card-full {
-  background-color: white !important;
+/* ===== Специфичные стили блоков ===== */
+.dropped-card.main-card-full {
+  min-height: 300px;
+  align-items: flex-start;
 }
 
+.nav-card-full { background-color: white !important; }
 .nav-layout-unfolded {
   display: flex;
   align-items: center;
@@ -590,7 +378,6 @@
   border: 1px solid #e5e7eb;
 }
 
-/* ===== Стили для Главного блока (main) ===== */
 .main-block-unfolded {
   display: flex;
   flex-direction: column;
@@ -672,7 +459,6 @@
   min-height: 60px;
 }
 
-/* ===== Визуальный блок при перетаскивании ===== */
 .drag-cursor-block {
   position: fixed;
   display: flex;
@@ -690,7 +476,6 @@
   opacity: 0.9;
 }
 
-/* ===== Стили для блока Обо мне (about) ===== */
 .dropped-card.about-card-full {
   background-color: white !important;
   align-items: flex-start;
@@ -712,7 +497,6 @@
   line-height: 32px;
   color: #111827;
   margin-bottom: 16px;
-  vertical-align: middle;
 }
 
 .about-input-field {
@@ -727,7 +511,6 @@
   color: #374151;
   resize: none; 
   outline: none;
-  overflow: hidden; 
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
@@ -735,7 +518,6 @@
   background: #F9FAFB;
 }
 
-/* ===== Стили для блока Галерея проектов (projects) ===== */
 .projects-container {
   width: 100%;
   padding: 20px 0;
@@ -765,7 +547,6 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  min-width: 0;
 }
 
 .project-cover-placeholder {
@@ -780,7 +561,6 @@
   color: #9CA3AF;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
 .project-input-title, 
@@ -848,9 +628,7 @@
 }
 
 @media (max-width: 500px) {
-  .projects-grid {
-    grid-template-columns: 1fr;
-  }
+  .projects-grid { grid-template-columns: 1fr; }
 }
 
 .dropped-card.projects-card-full {
@@ -859,7 +637,6 @@
   width: 100%;
 }
 
-/* ===== Стили для блока Навыки (skills) ===== */
 .dropped-card.skills-card-full {
   background-color: white !important;
   align-items: flex-start !important;
@@ -931,12 +708,6 @@
   font-family: inherit;
 }
 
-.skill-input-field:focus {
-  background: #d1d9ff;
-}
-
-/* ===== Стили для блока История опыта (experience) ===== */
-
 .dropped-card.experience-card-full {
   background-color: white !important;
   align-items: flex-start !important;
@@ -944,7 +715,6 @@
   width: 100%;
 }
 
-/* Контейнер и заголовок */
 .experience-container-unfolded {
   width: 100%;
   padding: 10px 0;
@@ -957,7 +727,6 @@
   margin-bottom: 32px;
 }
 
-/* Линия и обертка */
 .timeline-wrapper {
   position: relative;
   padding-left: 32px;
@@ -972,7 +741,6 @@
   background-color: #D1E9FF;
 }
 
-/* Элемент списка */
 .timeline-item {
   position: relative;
   margin-bottom: 40px;
@@ -1020,7 +788,6 @@
   color: #DC2626;
 }
 
-/* Поля ввода */
 .exp-input-role, .exp-input-company, .exp-input-period, .exp-input-desc {
   border: none;
   background: transparent;
@@ -1036,11 +803,6 @@
   color: #111827;
 }
 
-.exp-input-role::placeholder {
-  color: #94A3B8;
-  font-weight: 400;
-}
-
 .exp-meta-row {
   display: flex;
   align-items: center;
@@ -1052,11 +814,6 @@
   font-size: 14px;
   width: auto;
   color: #6B7280;
-}
-
-.exp-input-company::placeholder,
-.exp-input-period::placeholder {
-  color: #94A3B8;
 }
 
 .meta-divider {
@@ -1073,10 +830,6 @@
   line-height: 1.5;
 }
 
-.exp-input-desc::placeholder {
-  color: #94A3B8;
-}
-
 .exp-input-desc:focus,
 .exp-input-role:focus,
 .exp-input-company:focus,
@@ -1088,7 +841,6 @@
   width: calc(100% + 16px);
 }
 
-/* Кнопка добавления (в стиле ссылки) */
 .add-experience-link-btn {
   display: flex;
   align-items: center;
@@ -1113,152 +865,7 @@
   line-height: 1;
 }
 
-/* ===== Стили для блока Отзывы (reviews) ===== */
-/* Общий контейнер */
-.dropped-card.reviews-card-full {
-  background-color: white !important;
-  display: block !important;
-  width: 100%;
-}
-
-.reviews-container-unfolded {
-  width: 100%;
-  padding: 10px 0;
-}
-
-.reviews-main-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 24px;
-}
-
-.reviews-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Карточка отзыва */
-.review-card-item {
-  position: relative;
-  background-color: #F9FAFB; 
-  border-radius: 10px;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  border: 1px solid transparent;
-  transition: border-color 0.2s;
-}
-
-.review-card-item:hover {
-  border-color: #D1E9FF;
-}
-
-/* Поля ввода */
-.review-input-text, .review-input-name, .review-input-pos {
-  border: none;
-  background: transparent;
-  outline: none;
-  font-family: inherit;
-  padding: 0;
-  width: 100%;
-  text-align: center;
-}
-
-.review-input-text {
-  font-size: 16px;
-  line-height: 1.5;
-  color: #374151;
-  resize: none;
-  overflow: hidden;
-  font-weight: 400;
-}
-
-.review-input-text::placeholder {
-  color: #94A3B8;
-}
-
-.review-author-box {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.review-input-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-}
-
-.review-input-pos {
-  font-size: 14px;
-  color: #6B7280;
-}
-
-/* Кнопка удаления */
-.review-card-remove {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: white;
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #9CA3AF;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.review-card-remove:hover {
-  background: #FEE2E2;
-  color: #EF4444;
-}
-
-/* Кнопка добавления */
-.add-review-action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: transparent;
-  border: 2px dashed #D1E9FF;
-  border-radius: 10px;
-  padding: 20px;
-  color: #4F86FF;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 8px;
-}
-
-.add-review-action-btn:hover {
-  background: #F0F7FF;
-  border-color: #4F86FF;
-}
-
-.plus-circle {
-  width: 24px;
-  height: 24px;
-  background: #4F86FF;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: bold;
-}
-
 /* ===== Стили для блока Подвал (footer) ===== */
-/* ===== Стили для минималистичного Подвала (footer) ===== */
 .dropped-card.footer-card-full {
   background-color: white !important;
   display: block !important;
@@ -1273,7 +880,6 @@
   gap: 16px;
 }
 
-/* Верхняя полоска */
 .footer-divider {
   width: 100%;
   height: 1px;
@@ -1281,7 +887,6 @@
   margin-bottom: 8px;
 }
 
-/* Строка с копирайтом и именем */
 .footer-copyright-row {
   display: flex;
   align-items: center;
@@ -1292,7 +897,6 @@
   color: #6B7280;
 }
 
-/* Инлайн-поле для имени */
 .footer-inline-input {
   border: none;
   background: transparent;
@@ -1311,12 +915,6 @@
   border-bottom-color: #4F86FF;
 }
 
-.footer-inline-input::placeholder {
-  color: #D1D5DB;
-  font-weight: 400;
-}
-
-/* ===== Контейнер для ссылок (GitHub, LinkedIn, Telegram) ===== */
 .footer-social-row {
   display: flex;
   align-items: center;
@@ -1326,7 +924,6 @@
   margin-top: 4px;
 }
 
-/* ===== Инпуты для соцсетей ===== */
 .footer-social-input {
   border: 1px solid transparent;
   background: #F3F4F6;
@@ -1340,11 +937,8 @@
   transition: all 0.2s;
 }
 
-.footer-social-input::placeholder {
-  color: #9CA3AF;
-}
 
-/* ===== Стили для Кастомного блока (Свободный холст) ===== */
+/* ===== Кастомный блок ===== */
 .custom-block-container {
   width: 100%;
   background: transparent;
@@ -1352,13 +946,13 @@
 
 .custom-toolbar {
   display: flex;
-  flex-direction: column; /* Ставим элементы в колонку (кнопки сверху, текст снизу) */
+  flex-direction: column; 
   gap: 12px;
   padding: 16px 20px;
   border: 1px solid #e5e7eb;
-  border-radius: 8px; /* Скругляем все углы */
-  background: #f9fafb; /* Тот самый серый фон */
-  margin-bottom: 16px; /* Визуально отлепляем от холста */
+  border-radius: 8px; 
+  background: #f9fafb; 
+  margin-bottom: 16px; 
 }
 
 .custom-toolbar-buttons {
@@ -1384,12 +978,10 @@
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s;
-  flex-shrink: 1;
 }
 
 .custom-toolbar-btn:hover {
   background: #f3f4f6;
-  border-color: #9ca3af;
 }
 
 .btn-icon {
@@ -1402,16 +994,15 @@
 .custom-toolbar-hint {
   color: #9ca3af;
   font-size: 13px;
-  /* Убрали боковую рамку и margin-left, так как текст теперь на новой строке */
 }
 
 .custom-canvas-area {
   position: relative;
   width: 100%;
   min-height: 500px;
-  border: 1.5px dashed #d1d5db; /* Пунктирная рамка */
-  border-radius: 8px; /* Скругляем все углы */
-  background: #ffffff; /* Сам холст белый */
+  border: 1.5px dashed #d1d5db; 
+  border-radius: 8px; 
+  background: #ffffff; 
   overflow: hidden;
 }
 
@@ -1429,7 +1020,6 @@
   cursor: grabbing;
 }
 
-/* Белые кружочки по углам */
 .resize-handle {
   position: absolute;
   width: 10px;
@@ -1450,7 +1040,6 @@
 .resize-handle.sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
 .resize-handle.se { bottom: -6px; right: -6px; cursor: nwse-resize; }
 
-/* Кнопка удаления (Красный крестик) */
 .custom-item-delete {
   position: absolute;
   top: -12px;
@@ -1469,14 +1058,12 @@
   opacity: 0;
   transition: opacity 0.2s;
   z-index: 10;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .custom-draggable-item.active .custom-item-delete {
   opacity: 1;
 }
 
-/* Кнопочка (ручка) для перетаскивания текста */
 .custom-drag-handle {
   position: absolute;
   top: -14px;
@@ -1494,11 +1081,6 @@
   justify-content: center;
 }
 
-.custom-drag-handle:active {
-  cursor: grabbing;
-}
-
-/* Контент */
 .custom-text-input {
   width: 100%;
   height: 100%;
@@ -1520,7 +1102,6 @@
   font-size: 16px;
   font-weight: 400;
   color: #4b5563;
-  line-height: 1.5;
 }
 
 .custom-image-item {
@@ -1531,67 +1112,118 @@
   display: block;
 }
 
-/* ===== Обновленные стили профиля с оверлеем "Выйти" ===== */
-.profile-avatar-container {
+
+/* ===== МЕНЮ ПРОФИЛЯ ПО МАКЕТУ ===== */
+.profile-container {
   position: relative;
+}
+
+.profile-avatar-wrapper {
   width: 40px;
   height: 40px;
-  cursor: pointer;
   border-radius: 50%;
   overflow: hidden;
+  cursor: pointer;
   border: 1px solid #e5e7eb;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s;
 }
 
-.profile-avatar-container:hover {
-  border-color: #515DEF;
-}
-
-/* Сама картинка аватарки */
 .profile-avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
-  transition: opacity 0.2s ease;
 }
 
-.logout-overlay {
+/* Правильный hover на обертку, а не на саму картинку */
+.profile-avatar-wrapper:hover {
+  border-color: #515DEF;
+}
+
+.user-dropdown-menu {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
+  top: 50px;
+  right: 0;
+  width: 260px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 8px 0;
+  z-index: 1000;
+  border: 1px solid #f3f4f6;
+}
+
+.dropdown-header {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Добавлен класс для Имени и Фамилии */
+.user-fullname {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  word-break: break-word;
+}
+
+.user-email {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #f3f4f6;
+  margin: 4px 0;
+}
+
+.dropdown-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  opacity: 0; /* Невидимый изначально */
-  transition: opacity 0.2s ease;
-  pointer-events: none;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.profile-avatar-container:hover .logout-overlay {
-  opacity: 1;
+.dropdown-item:hover {
+  background: #f9fafb;
 }
 
-.profile-avatar-container:hover .profile-avatar {
+.item-content-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.item-icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.item-arrow-svg {
+  width: 12px;
+  height: 12px;
   opacity: 0.5;
 }
-.dropped-card-wrapper {
-  cursor: grab;
-  transition: transform 0.2s ease;
+
+.item-stats-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: #9ca3af;
 }
 
-.dropped-card-wrapper:active {
-  cursor: grabbing;
+.dropdown-item.logout {
+  color: #ef4444;
+  font-weight: 600;
+  justify-content: flex-start;
 }
 
-/* Визуальный эффект при перетаскивании (опционально) */
-.dropped-card-wrapper[draggable="true"] {
-  opacity: 1;
+.dropdown-item.logout:hover {
+  background: #fef2f2;
 }
