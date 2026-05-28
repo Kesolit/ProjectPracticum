@@ -322,6 +322,29 @@ const FooterBlock = ({ content, onChange }: { content: any, onChange: (data: any
 
 
 // --- ГЛАВНЫЙ КОМПОНЕНТ РЕДАКТОРА ---
+const LOCAL_DRAFT_KEY = 'portfolio_local_draft';
+
+const saveDraftToLocalStorage = (blocks: BlockType[]) => {
+  try {
+    localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(blocks));
+  } catch (e) {
+    console.error('Failed to save draft to localStorage', e);
+  }
+};
+
+const loadDraftFromLocalStorage = (): BlockType[] | null => {
+  try {
+    const data = localStorage.getItem(LOCAL_DRAFT_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch (e) {
+    console.error('Failed to load draft from localStorage', e);
+    return null;
+  }
+};
+
+const clearLocalStorageDraft = () => {
+  localStorage.removeItem(LOCAL_DRAFT_KEY);
+};
 
 const Editor = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -337,6 +360,7 @@ const Editor = () => {
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
   const [isLoadingDraft, setIsLoadingDraft] = useState(true);
   const [currentSlug, setCurrentSlug] = useState<string | null>(null);
+  const [isServerSaved, setIsServerSaved] = useState(true); // true = текущие блоки совпадают с сервером
   
   const navigate = useNavigate()
 
@@ -411,12 +435,25 @@ const Editor = () => {
       setIsLoadingDraft(true);
       const response = await getMyDraft();
       // Структура ответа: { success: true, data: { id, title, sections, updatedAt } }
-      if (response.success && response.data && response.data.sections) {
+      if (response.success && response.data && response.data.sections && response.data.sections.length > 0) {
         setDroppedBlocks(response.data.sections);
+        setIsServerSaved(true);
+        clearLocalStorageDraft(); // серверный черновик актуален, локальный не нужен
+      } else {
+        const localDraft = loadDraftFromLocalStorage();
+        if (localDraft && localDraft.length > 0) {
+          setDroppedBlocks(localDraft);
+          setIsServerSaved(false); // это локальный несохраненный черновик
+        }
       }
     } catch (err) {
       console.error("Не удалось загрузить черновик:", err);
-      // Если ошибка (например, нет черновика), просто оставляем пустую страницу
+      // Если ошибка (например, нет черновика), тоже пробуем localStorage
+      const localDraft = loadDraftFromLocalStorage();
+      if (localDraft && localDraft.length > 0) {
+        setDroppedBlocks(localDraft);
+        setIsServerSaved(false);
+      }
     } finally {
       setIsLoadingDraft(false);
     }
@@ -435,6 +472,9 @@ const Editor = () => {
         const viewUrl = `${window.location.origin}/view/${response.slug}`;
         setCurrentUrl(viewUrl);
         setIsModalOpen(true);
+        setCurrentSlug(response.slug);
+        setIsServerSaved(true);
+        clearLocalStorageDraft(); // черновик сохранён на сервер, локальный больше не нужен
       } else {
         alert('Сохранено, но сервер не вернул ссылку.');
       }
@@ -467,6 +507,30 @@ const Editor = () => {
       }
     }
   };
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!isServerSaved && droppedBlocks.length > 0) {
+        e.preventDefault();
+        e.returnValue = 'У вас есть несохранённые изменения. Вы уверены, что хотите покинуть страницу?';
+        return e.returnValue;
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isServerSaved, droppedBlocks]);
+
+  // Автосохранение черновика в localStorage (с задержкой 1 секунда)
+  useEffect(() => {
+    if (!isLoadingDraft && droppedBlocks.length > 0) {
+      const timer = setTimeout(() => {
+        saveDraftToLocalStorage(droppedBlocks);
+        // помечаем, что есть несохранённые изменения на сервере
+        if (isServerSaved) setIsServerSaved(false);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [droppedBlocks, isLoadingDraft, isServerSaved]);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -705,6 +769,7 @@ const Editor = () => {
   
   const handleLogout = () => {
     localStorage.clear();
+    clearLocalStorageDraft();
     setIsLoggedIn(false);
     setIsMenuOpen(false);
     navigate('/login');
