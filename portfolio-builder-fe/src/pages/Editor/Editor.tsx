@@ -434,18 +434,18 @@ const Editor = () => {
     try {
       setIsLoadingDraft(true);
       const response = await getMyDraft();
-      // Структура ответа: { success: true, data: { id, title, sections, updatedAt } }
-      if (response.success && response.data && response.data.sections && response.data.sections.length > 0) {
+      // сначала проверка localStorage
+      const localDraft = loadDraftFromLocalStorage();
+      if (localDraft && localDraft.length > 0) {
+        setDroppedBlocks(localDraft);
+        setIsServerSaved(false);
+        // Структура ответа: { success: true, data: { id, title, sections, updatedAt } }
+      } else if (response.success && response.data && response.data.sections && response.data.sections.length > 0) {
         setDroppedBlocks(response.data.sections);
         setIsServerSaved(true);
         clearLocalStorageDraft(); // серверный черновик актуален, локальный не нужен
-      } else {
-        const localDraft = loadDraftFromLocalStorage();
-        if (localDraft && localDraft.length > 0) {
-          setDroppedBlocks(localDraft);
-          setIsServerSaved(false); // это локальный несохраненный черновик
-        }
       }
+      // Если ни локального, ни серверного, то оставляем пустой массив
     } catch (err) {
       console.error("Не удалось загрузить черновик:", err);
       // Если ошибка (например, нет черновика), тоже пробуем localStorage
