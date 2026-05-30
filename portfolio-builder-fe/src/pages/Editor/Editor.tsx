@@ -861,6 +861,15 @@ const Editor = () => {
         <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <img src={logo} alt="dev/folio" className="logo-icon" />
           <span className="logo-text">dev/folio</span>
+          <button  className="search-portfolio-btn"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                navigate('/dashboard')
+              }}
+            >
+              Поиск
+            </button>
         </div>
         <div className="header-actions">
           <button className="header-btn preview-btn" onClick={handlePreview}><img src={eyeOn}/>Предпросмотр</button>

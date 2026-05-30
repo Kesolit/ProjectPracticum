@@ -1607,3 +1607,24 @@
 .dropped-card-wrapper[draggable="true"] {
   opacity: 1;
 }
+
+.search-portfolio-btn {
+  margin-left: 24px;
+  padding: 6px 22px;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.search-portfolio-btn:hover {
+  background: #f9fafb;
+  border-color: #4F86FF;
+  color: #4F86FF;
+}
