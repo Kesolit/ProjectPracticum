@@ -180,7 +180,7 @@ export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
 };
 
 // ----- CRUD для портфолио -----
-export const savePortfolioDraft = async (draftData: { title: string; sections: any[] }) => {
+export const savePortfolioDraft = async (draftData: { title: string; sections: any[]; isPublic?: boolean }) => {
   const response = await authFetch(`${API_BASE_URL}/api/draft`, {
     method: 'POST',
     body: JSON.stringify(draftData),

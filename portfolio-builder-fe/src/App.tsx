@@ -5,6 +5,7 @@ import Login from './pages/Login/Login'
 import PublicView from './pages/PublicView/PublicView'
 import Dashboard from './pages/Dashboard/Dashboard'
 import Preview from './pages/Preview/Preview'
+import SettingsPage from './pages/Settings/SettingsPage';
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         
         <Route path="/view/:slug" element={<PublicView />} />
+
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </BrowserRouter>
   )

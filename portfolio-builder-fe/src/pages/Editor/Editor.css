@@ -1513,7 +1513,8 @@
   outline-offset: -4px;
 }
 
-.preview-btn {
+.preview-btn,
+.export-btn{
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1521,4 +1522,109 @@
 
 .preview-btn img{
   width: 17px;
+}
+
+/* Контейнер в левом верхнем углу холста */
+.visibility-toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  margin-top: -30px;   
+  margin-left: -25px;
+}
+
+/* Текст статуса */
+.visibility-toggle-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+  user-select: none;
+}
+
+/* Свитч-контейнер */
+.visibility-switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+}
+
+/* Скрываем дефолтный инпут */
+.visibility-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Оболочка слайдера */
+.visibility-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #e5e7eb;
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 30px;
+}
+
+/* Кругляшок переключателя */
+.visibility-slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Цветовой акцент при включении (твой фиолетово-синий #515def) */
+.visibility-switch input:checked + .visibility-slider {
+  background-color: #515def;
+}
+
+/* Движение кругляшка вправо */
+.visibility-switch input:checked + .visibility-slider::before {
+  transform: translateX(18px);
+}
+
+.empty-state {
+  padding-top: 80px !important;
+}
+
+.dropped-card-wrapper {
+  cursor: grab;
+  transition: transform 0.2s ease;
+}
+
+.dropped-card-wrapper:active {
+  cursor: grabbing;
+}
+
+.dropped-card-wrapper[draggable="true"] {
+  opacity: 1;
+}
+
+.search-portfolio-btn {
+  margin-left: 24px;
+  padding: 6px 22px;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.search-portfolio-btn:hover {
+  background: #f9fafb;
+  border-color: #4F86FF;
+  color: #4F86FF;
 }

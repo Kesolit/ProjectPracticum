@@ -364,6 +364,15 @@ const Editor = () => {
   
   const navigate = useNavigate()
 
+  const [isPublic, setIsPublic] = useState<boolean>(() => {
+    const savedVisibility = localStorage.getItem('portfolio_is_public');
+    return savedVisibility ? JSON.parse(savedVisibility) : false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('portfolio_is_public', JSON.stringify(isPublic));
+  }, [isPublic]);
+
   const scrollElementIntoCanvasOrSidebar = useCallback((blockType: string) => {
     requestAnimationFrame(() => {
       const canvasEl = document.getElementById(`editor-canvas-section-${blockType}`)
@@ -465,7 +474,8 @@ const Editor = () => {
     try {
       const response = await savePortfolioDraft({
         title: "Моё крутое портфолио",
-        sections: droppedBlocks
+        sections: droppedBlocks,
+        isPublic
       });
       
       if (response && response.slug) {
@@ -558,7 +568,7 @@ const Editor = () => {
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
-  // Закрытие выпадающих меню при клике мимо
+  // Закрытие выпадающих менmainи клике мимо
   useEffect(() => {
     if (!isMenuOpen && !isPortfolioNavDropdownOpen) return;
     const handleGlobalClick = () => {
@@ -851,10 +861,19 @@ const Editor = () => {
         <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <img src={logo} alt="dev/folio" className="logo-icon" />
           <span className="logo-text">dev/folio</span>
+          <button  className="search-portfolio-btn"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                navigate('/dashboard')
+              }}
+            >
+              Поиск
+            </button>
         </div>
         <div className="header-actions">
           <button className="header-btn preview-btn" onClick={handlePreview}><img src={eyeOn}/>Предпросмотр</button>
-          <button className="header-btn" onClick={handleExport}><img src={download}/> Экспорт</button>
+          <button className="header-btn export-btn" onClick={handleExport}><img src={download}/> Экспорт</button>
           <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
           
           {isLoggedIn ? (
@@ -961,6 +980,20 @@ const Editor = () => {
         </aside>
 
         <main className="canvas" onDrop={handleDrop} onDragOver={handleDragOver}>
+            <div className="visibility-toggle-container">
+            <span className="visibility-toggle-label">
+              Публичный доступ
+            </span>
+            <label className="visibility-switch">
+              <input 
+                type="checkbox" 
+                checked={isPublic} 
+                onChange={(e) => setIsPublic(e.target.checked)} 
+              />
+              <span className="visibility-slider"></span>
+            </label>
+          </div>
+
           {isLoadingDraft ? (
             <div className='loading-draft'>Загрузка вашего замечательного портфолио...</div>
           ) : (
@@ -974,7 +1007,14 @@ const Editor = () => {
             ) : (
               <div className="dropped-blocks-container">
                 {droppedBlocks.map((block, idx) => (
-                  <div key={idx} className="dropped-card-wrapper fade-in">
+                  <div 
+                  key={`${block.type}-${idx}`} 
+                  className="dropped-card-wrapper fade-in"
+                  draggable // Обязательно делаем блок перетаскиваемым
+                  onDragStart={() => handleSortStart(idx)}
+                  onDragOver={(e) => handleSortOver(e, idx)}
+                  onDragEnd={handleSortEnd}
+                >
                     <div
                       className={`dropped-card
                         ${block.type === 'nav' ? 'nav-card-full' : ''}
