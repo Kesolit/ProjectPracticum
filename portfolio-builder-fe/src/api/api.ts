@@ -1,5 +1,4 @@
 export const API_BASE_URL = 'https://portfoliobackend-production-8982.up.railway.app'; // C# сервер
-
 // ----- Вспомогательные функции для токенов -----
 export const setTokens = (accessToken: string, refreshToken: string) => {
   localStorage.setItem('accessToken', accessToken);
@@ -56,6 +55,28 @@ const refreshAccessToken = async (): Promise<string> => {
     return accessToken;
   }
   throw new Error('Invalid refresh response');
+};
+
+export const getSearchPortfolios = async (params: {
+  spec?: string;
+  level?: string;
+  techs?: string;
+  sort?: string;
+  page?: number;
+  pageSize?: number;
+}) => {
+  const query = new URLSearchParams();
+  if (params.spec) query.append('spec', params.spec);
+  if (params.level) query.append('level', params.level);
+  if (params.techs) query.append('techs', params.techs);
+  if (params.sort) query.append('sort', params.sort);
+  if (params.page) query.append('page', params.page.toString());
+  if (params.pageSize) query.append('pageSize', params.pageSize.toString());
+  
+  const response = await fetch(`${API_BASE_URL}/api/draft/search?${query.toString()}`);
+  if (!response.ok) throw new Error('Ошибка поиска');
+  const result = await response.json();
+  return result.data; // { items, totalCount, page, pageSize }
 };
 
 // ----- Обёртка fetch с авторизацией и автоматическим обновлением -----
@@ -212,6 +233,29 @@ export const getMyDraft = async () => {
   const response = await authFetch(`${API_BASE_URL}/api/draft/my`);
   if (!response.ok) {
     throw new Error('Ошибка загрузки черновика');
+  }
+  return response.json();
+};
+
+export const changePassword = async (currentPassword: string, newPassword: string) => {
+  const response = await authFetch(`${API_BASE_URL}/api/user/password`, {
+    method: 'PUT',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || 'Ошибка смены пароля');
+  }
+  return response.json();
+};
+
+export const deleteAccount = async () => {
+  const response = await authFetch(`${API_BASE_URL}/api/user/account`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || 'Ошибка удаления аккаунта');
   }
   return response.json();
 };

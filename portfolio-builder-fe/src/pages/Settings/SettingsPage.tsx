@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './SettingsPage.css';
 import logo from '../../assets/logo.svg'; 
 import githubIcon from '../../assets/icons/github.svg'; 
+import { changePassword, deleteAccount } from '../../api/api';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,6 +12,9 @@ const SettingsPage: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Имитация данных с бэкенда: какие сети подключены
   const [connectedProviders, setConnectedProviders] = useState({
@@ -25,6 +29,56 @@ const SettingsPage: React.FC = () => {
       [provider]: !prev[provider]
     }));
   };
+
+  // Обработчик смены пароля
+const handleChangePassword = async () => {
+  if (!currentPassword || !newPassword || !repeatPassword) {
+    setMessage({ type: 'error', text: 'Заполните все поля пароля' });
+    return;
+  }
+  if (newPassword !== repeatPassword) {
+    setMessage({ type: 'error', text: 'Новый пароль и подтверждение не совпадают' });
+    return;
+  }
+  if (newPassword.length < 6) {
+    setMessage({ type: 'error', text: 'Пароль должен быть не менее 6 символов' });
+    return;
+  }
+
+  setIsSaving(true);
+  setMessage(null);
+  try {
+    await changePassword(currentPassword, newPassword);
+    setMessage({ type: 'success', text: 'Пароль успешно изменён' });
+    setCurrentPassword('');
+    setNewPassword('');
+    setRepeatPassword('');
+  } catch (err: any) {
+    setMessage({ type: 'error', text: err.message || 'Ошибка смены пароля' });
+  } finally {
+    setIsSaving(false);
+  }
+};
+
+// Обработчик удаления аккаунта
+const handleDeleteAccount = async () => {
+  const confirmed = window.confirm(
+    'Вы уверены, что хотите удалить аккаунт? Все данные (портфолио, настройки) будут безвозвратно удалены.'
+  );
+  if (!confirmed) return;
+
+  setIsDeleting(true);
+  try {
+    await deleteAccount();
+    // Очищаем локальное хранилище и перенаправляем на страницу входа
+    localStorage.clear();
+    navigate('/login');
+  } catch (err: any) {
+    setMessage({ type: 'error', text: err.message || 'Ошибка удаления аккаунта' });
+  } finally {
+    setIsDeleting(false);
+  }
+};
 
   const handleLogoClick = () => navigate('/');
   const handleBack = () => navigate(-1);
@@ -56,6 +110,11 @@ const SettingsPage: React.FC = () => {
           <h1 className="settings-page-title">Настройки аккаунта</h1>
         </div>
         <p className="settings-page-subtitle">Управление безопасностью, интеграциями и профилем</p>
+        {message && (
+          <div className={`settings-message ${message.type}`}>
+            {message.text}
+          </div>
+        )}
 
         {/* --- БЛОК 1: СМЕНА ПАРОЛЯ --- */}
         <section className="settings-card">
@@ -96,7 +155,13 @@ const SettingsPage: React.FC = () => {
                 />
               </div>
             </form>
-            <button className="settings-btn-primary">Сохранить пароль</button>
+            <button
+              className="settings-btn-primary"
+              onClick={handleChangePassword}
+              disabled={isSaving}
+            >
+              {isSaving ? 'Сохранение...' : 'Сохранить пароль'}
+            </button>
           </div>
         </section>
 
@@ -168,7 +233,13 @@ const SettingsPage: React.FC = () => {
               <h3>Удалить аккаунт и профиль</h3>
               <p>Все созданные портфолио, сохраненный прогресс и настройки будут безвозвратно удалены без возможности восстановления.</p>
             </div>
-            <button className="settings-btn-outline btn-danger-solid">Удалить аккаунт</button>
+            <button
+              className="settings-btn-outline btn-danger-solid"
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Удаление...' : 'Удалить аккаунт'}
+            </button>
           </div>
         </section>
 

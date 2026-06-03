@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 // Предполагаемые импорты API и иконок (замени на свои пути)
-// import { getSearchPortfolios } from '../../api/api'; 
+import { getSearchPortfolios } from '../../api/api'; 
 import logo from '../../assets/logo.svg';
 import eyeOn from '../../assets/eye-on.svg';
 import iconArrow from '../../assets/icon-arrow.svg';
@@ -15,13 +15,16 @@ import iconStatistics from '../../assets/icon-statistics.svg';
 interface Portfolio {
   id: string;
   slug: string;
+  views: number;
+  createdAt: string;
   user: {
     name: string;
     avatarUrl?: string;
   };
-  views: number;
-  createdAt: string; // ISO date string
-  sections: any[]; // Секции из базы данных
+  name: string;        // имя из main.greeting
+  role: string;        // специализация
+  description: string;
+  skills: string[];
 }
 
 // Вспомогательная функция для склонения дней
@@ -42,17 +45,14 @@ const getDaysAgo = (dateString: string) => {
 const PortfolioCard = ({ portfolio }: { portfolio: Portfolio }) => {
   const [showAllTechs, setShowAllTechs] = useState(false);
 
-  // Достаем данные из секций, сохраненных в БД
-  const mainBlock = portfolio.sections?.find((s) => s.type === 'main')?.content || {};
-  const skillsBlock = portfolio.sections?.find((s) => s.type === 'skills')?.content?.skills || [];
+  const name = portfolio.name || portfolio.user?.name || 'Имя не указано';
+  const role = portfolio.role || 'Специализация не указана';
+  const description = portfolio.description || '';
+  const avatar = portfolio.user?.avatarUrl || 'https://via.placeholder.com/48';
+  const skills = portfolio.skills || [];
   
-  const name = mainBlock.greeting || portfolio.user?.name || 'Имя не указано';
-  const role = mainBlock.role || 'Специализация не указана';
-  const description = mainBlock.description || '';
-  const avatar = mainBlock.avatarUrl || portfolio.user?.avatarUrl || 'https://via.placeholder.com/48';
-  
-  const visibleTechs = showAllTechs ? skillsBlock : skillsBlock.slice(0, 3);
-  const hiddenTechsCount = skillsBlock.length - 3;
+  const visibleTechs = showAllTechs ? skills : skills.slice(0, 3);
+  const hiddenTechsCount = skills.length - 3;
 
   const handleOpen = () => {
     window.open(`/view/${portfolio.slug}`, '_blank');
@@ -98,9 +98,11 @@ const PortfolioCard = ({ portfolio }: { portfolio: Portfolio }) => {
 
 // --- ОСНОВНОЙ КОМПОНЕНТ ---
 const Dashboard = () => {
+  const [sortBy, setSortBy] = useState('new'); // 'popular' или 'new'
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userData, setUserData] = useState<any>(null);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Фильтры
   const [selectedSpecs, setSelectedSpecs] = useState<string[]>([]);
@@ -127,34 +129,52 @@ const Dashboard = () => {
   'Swift / SwiftUI', 'Docker', 'Kubernetes', 'GraphQL', 'Jest', 
   'Cypress', 'Playwright', 'Figma', 'Git / GitHub'
 ];
+
+  const getUniqueLatestPortfolios = (portfolios: any[]) => {
+    const userMap = new Map<string, any>();
+    // Порядок с бэкенда сохраняется – не сортируем!
+    for (const portfolio of portfolios) {
+      const key = portfolio.user.name;
+      if (!userMap.has(key)) {
+        userMap.set(key, portfolio);
+      }
+    }
+    return Array.from(userMap.values());
+  };
   // Подгрузка данных пользователя (для хеддера)
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) setUserData(JSON.parse(storedUser));
-  }, []);
-
-  // Подгрузка портфолио из БД
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        // РЕАЛЬНЫЙ ЗАПРОС К БД:
-        // const response = await getSearchPortfolios({ specs: selectedSpecs, levels: selectedLevels, techs: selectedTechs });
-        // setPortfolios(response.data);
-
-        // Временная имитация асинхронного ответа для проверки верстки (удали, когда подключишь API)
-        const mockDbCall = new Promise<Portfolio[]>((resolve) => setTimeout(() => resolve([]), 500));
-        await mockDbCall;
-        
-      } catch (error) {
-        console.error("Ошибка загрузки портфолио:", error);
-      } finally {
-        setIsLoading(false);
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const params: any = { 
+        sort: sortBy, 
+        page: 1, 
+        pageSize: 12 
+      };
+      
+      // Добавляем фильтры, если они выбраны
+      if (selectedSpecs.length > 0) {
+        params.spec = selectedSpecs[0]; // берём первый (или можно объединить, но бэкенд ждёт строку)
       }
-    };
-    
-    loadData();
-  }, [selectedSpecs, selectedLevels, selectedTechs]);
+      if (selectedLevels.length > 0) {
+        params.level = selectedLevels[0];
+      }
+      if (selectedTechs.length > 0) {
+        params.techs = selectedTechs.join(',');
+      }
+      
+      const response = await getSearchPortfolios(params);
+      const uniqueItems = getUniqueLatestPortfolios(response.items);
+      setPortfolios(uniqueItems);
+      setTotalCount(uniqueItems.length);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  loadData();
+}, [sortBy, selectedSpecs, selectedLevels, selectedTechs]); // зависимости включают все фильтры
 
   // Обработчики фильтров
   const toggleFilter = (item: string, list: string[], setList: (l: string[]) => void) => {
@@ -303,16 +323,16 @@ const Dashboard = () => {
           <main className="results-area">
             <div className="results-header">
               <div className="active-filters">
-                <span className="results-count">{portfolios.length} портфолио</span>
+                <span className="results-count">{totalCount} портфолио</span>
                 {selectedSpecs.map(s => <span key={s} className="filter-tag">{s} <button onClick={() => removeFilterTag('spec', s)}>✕</button></span>)}
                 {selectedLevels.map(l => <span key={l} className="filter-tag">{l} <button onClick={() => removeFilterTag('level', l)}>✕</button></span>)}
                 {selectedTechs.map(t => <span key={t} className="filter-tag">{t} <button onClick={() => removeFilterTag('tech', t)}>✕</button></span>)}
               </div>
               <div className="sort-dropdown">
                 <span>Сортировка:</span>
-                <select>
-                  <option>По популярности</option>
-                  <option>Новые</option>
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                  <option value="popular">По популярности</option>
+                  <option value="new">Новые</option>
                 </select>
               </div>
             </div>

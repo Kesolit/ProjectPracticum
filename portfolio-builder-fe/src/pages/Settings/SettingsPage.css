@@ -21,6 +21,21 @@
   margin-bottom: 8px;
 }
 
+.settings-message {
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.settings-message.success {
+  background: #d1fae5;
+  color: #065f46;
+}
+.settings-message.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
 .settings-back-btn {
   background: transparent;
   border: none;

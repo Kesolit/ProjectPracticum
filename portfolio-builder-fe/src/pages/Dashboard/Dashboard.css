@@ -216,6 +216,12 @@
   width: fit-content;
 }
 
+.pc-views img {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+
 /* Кнопка уровня */
 .fs-pill-level {
   padding: 6px 8px;
