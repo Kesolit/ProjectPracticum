@@ -6,6 +6,7 @@ import PublicView from './pages/PublicView/PublicView'
 import Dashboard from './pages/Dashboard/Dashboard'
 import Preview from './pages/Preview/Preview'
 import SettingsPage from './pages/Settings/SettingsPage';
+import OAuthCallback from './pages/oauth-callback/OAuthCallback'
 
 function App() {
   return (
@@ -25,6 +26,8 @@ function App() {
         <Route path="/view/:slug" element={<PublicView />} />
 
         <Route path="/settings" element={<SettingsPage />} />
+
+        <Route path="/oauth-callback" element={<OAuthCallback />} />
       </Routes>
     </BrowserRouter>
   )
