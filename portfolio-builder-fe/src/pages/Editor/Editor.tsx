@@ -889,8 +889,12 @@ const Editor = () => {
             {isMenuOpen && (
               <div className="user-dropdown-menu" onClick={(e) => e.stopPropagation()} role="menu">
                 <div className="dropdown-header">
-                  <span className="user-fullname">{userDisplayName}</span>
-                  <span className="user-email">{userData?.email || 'email@example.com'}</span>
+                  <span className="user-fullname">
+                    {userData?.fullName || `${userFirstName} ${userLastName}`.trim()}
+                  </span>
+                  <span className="user-email">
+                    {userData?.email || 'email@example.com'}
+                  </span>
                 </div>
 
                 <div className="dropdown-divider" aria-hidden />

@@ -235,7 +235,7 @@ const Dashboard = () => {
             {isMenuOpen && (
               <div className="user-dropdown-menu">
                 <div className="dropdown-header">
-                  <span className="user-fullname">{userData?.name || 'Пользователь'}</span>
+                  <span className="user-fullname">{userData?.fullName || 'Пользователь'}</span>
                   <span className="user-email">{userData?.email || ''}</span>
                 </div>
                 <div className="dropdown-divider" />
