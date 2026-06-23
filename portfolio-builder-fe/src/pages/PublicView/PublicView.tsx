@@ -24,7 +24,13 @@ const NavBlockPublic = ({ content, sections }: { content: any, sections: any[] }
 
   return (
     <nav className="nav-container">
-      <div className="nav-logo">{content?.logo || content?.logoText || 'МоёЛого.'}</div>
+      <div className="nav-logo">
+        {content?.logoImageUrl ? (
+          <img src={content.logoImageUrl} alt="" className="nav-logo-img" />
+        ) : (
+          content?.logo || content?.logoText || 'МоёЛого.'
+        )}
+      </div>
       
       <div 
         className="nav-dropdown-wrapper"
