@@ -1,6 +1,6 @@
-/* Добавляем контекст для общих оберток */
+/* Контекст — такой же как у EditorMobile */
 .mobile-register-context .mobile-body-wrapper {
-  background: #e5e7eb;
+  background: #f9fafb;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -8,78 +8,122 @@
 }
 
 .mobile-register-context .mobile-screen {
-  width: 390px;
-  height: 844px;
-  background: #f4f5f6;
+  width: 100%;
+  max-width: 480px;
+  height: 100vh;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
 }
 
-/* И главное — изолируем ломавшие десктоп классы хедера и контента */
-.mobile-register-context .register-header {
+/* Хедер — копия EditorMobile */
+.mobile-register-context .register-mobile-header {
   width: 100%;
   height: 60px;
   background: white;
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  justify-content: space-between;
+  padding: 0 16px;
   border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  z-index: 10;
 }
 
-.mobile-register-context .register-content {
-  flex: 1;
-  padding: 60px 20px 24px 20px; /* Увеличили верхний отступ (padding-top) до 32px */
+.mobile-register-context .header-left-nav {
   display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  box-sizing: border-box; /* Гарантирует, что паддинги не сломают общую высоту */
+  align-items: center;
+  gap: 8px;
 }
 
-.mobile-register-context .logo {
-  font-family: 'Red Hat Display', system-ui, -apple-system, sans-serif;
+.mobile-register-context .mobile-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.mobile-register-context .mobile-logo-img {
+  width: 35px;
+  height: 35px;
+}
+
+.mobile-register-context .mobile-logo-text {
   font-weight: 700;
-  font-size: 20px;
+  font-size: 24px;
   color: #111827;
 }
 
-.mobile-register-context .logo span {
-  color: #4f46e5;
+.mobile-register-context .header-right-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Кнопка "Войти" — такая же как в EditorMobile */
+.mobile-register-context .login-link-btn {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.mobile-register-context .login-link-btn:hover {
+  background: #f9fafb;
+}
+
+/* Контент */
+.mobile-register-context .register-content {
+  flex: 1;
+  padding: 24px 20px 32px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+.mobile-register-context .welcome-text {
+  margin-bottom: 24px;
+  width: 100%;
 }
 
 .mobile-register-context .welcome-text h2 {
-  font-family: 'Red Hat Display', system-ui, -apple-system, sans-serif;
-  font-size: 24px;
+  font-size: 28px;
+  font-weight: 700;
   color: #111827;
   margin-bottom: 8px;
 }
 
-.mobile-register-context .welcome-text {
-  margin-top: 8px;
-  margin-bottom: 20px;
-}
-
 .mobile-register-context .welcome-text p {
-  font-size: 14px;
+  font-size: 15px;
   color: #6b7280;
-  margin-bottom: 28px;
+  margin: 0;
 }
 
+/* Форма */
 .mobile-register-context .register-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .mobile-register-context .input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .mobile-register-context .input-group label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #374151;
 }
@@ -87,31 +131,73 @@
 .mobile-register-context .input-group input {
   width: 100%;
   height: 48px;
-  background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   padding: 0 16px;
   font-size: 15px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
+  box-sizing: border-box;
+  font-family: inherit;
 }
 
 .mobile-register-context .input-group input:focus {
   border-color: #4f46e5;
+  background: #ffffff;
 }
 
+.mobile-register-context .input-group input.mobile-input-error {
+  border-color: #dc2626;
+}
+
+.mobile-register-context .mobile-error-text {
+  font-size: 12px;
+  color: #dc2626;
+}
+
+/* Чекбокс */
+.mobile-register-context .mobile-checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 8px;
+}
+
+.mobile-register-context .mobile-checkbox-group input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mobile-register-context .mobile-checkbox-group label {
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.mobile-register-context .mobile-checkbox-group a {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+/* Кнопка регистрации — как в десктопе */
 .mobile-register-context .btn-primary {
   width: 100%;
   height: 48px;
   background: #4f46e5;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 8px;
   transition: background 0.2s;
+  margin-top: 8px;
+  font-family: inherit;
 }
 
 .mobile-register-context .btn-primary:not(:disabled):hover {
@@ -123,9 +209,10 @@
   cursor: not-allowed;
 }
 
+/* Соцсети */
 .mobile-register-context .divider {
   text-align: center;
-  margin: 24px 0;
+  margin: 24px 0 20px;
   position: relative;
 }
 
@@ -141,7 +228,7 @@
 }
 
 .mobile-register-context .divider span {
-  background: #f4f5f6;
+  background: #ffffff;
   padding: 0 12px;
   font-size: 13px;
   color: #9ca3af;
@@ -153,14 +240,14 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .mobile-register-context .btn-social {
   height: 44px;
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,13 +256,20 @@
   font-weight: 500;
   color: #374151;
   cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
 }
 
+.mobile-register-context .btn-social:hover {
+  background: #f9fafb;
+}
+
+/* Футер */
 .mobile-register-context .footer-redirect {
   text-align: center;
   font-size: 14px;
   color: #6b7280;
-  margin-top: auto;
+  padding-top: 80px;
 }
 
 .mobile-register-context .footer-redirect span {
@@ -184,6 +278,11 @@
   cursor: pointer;
 }
 
+.mobile-register-context .footer-redirect span:hover {
+  text-decoration: underline;
+}
+
+/* Ошибка */
 .mobile-register-context .mobile-error-message {
   background: #fef2f2;
   color: #dc2626;
