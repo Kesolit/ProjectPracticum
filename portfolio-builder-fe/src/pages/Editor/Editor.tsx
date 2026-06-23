@@ -509,25 +509,71 @@ const Editor = () => {
 
   const handleExport = async () => {
     if (currentSlug) {
-      // Если портфолио уже сохранено – сразу открываем версию для печати
+      // Если slug уже есть, открываем мгновенно
       const printUrl = `${window.location.origin}/view/${currentSlug}?print=true`;
       window.open(printUrl, '_blank');
     } else {
-      // Если ещё не сохранено – сначала сохраняем, затем открываем печать
+      // 1. Создаем пустую вкладку сразу (чтобы обойти блокировщик всплывающих окон)
+      const printWindow = window.open('about:blank', '_blank');
+      
+      if (!printWindow) {
+        alert('Браузер заблокировал всплывающее окно. Пожалуйста, разрешите всплывающие окна для этого сайта в настройках браузера.');
+        return;
+      }
+
+      // 2. Безопасная вставка загрузочного текста без деструктивного перетирания window.location
       try {
+        printWindow.document.title = "Экспорт портфолио...";
+        printWindow.document.body.innerHTML = `
+          <div style="
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            height: 80vh; 
+            font-family: sans-serif;
+            color: #374151;
+          ">
+            <div style="
+              width: 32px; 
+              height: 32px; 
+              border: 3px solid #f3f4f6; 
+              border-top: 3px solid #2563eb; 
+              border-radius: 50%; 
+              animation: spin 1s linear infinite;
+              margin-bottom: 16px;
+            "></div>
+            <h3>Подготовка документа к экспорту...</h3>
+            <p style="color: #9ca3af; margin: 0;">Пожалуйста, подождите.</p>
+          </div>
+          <style>
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          </style>
+        `;
+      } catch (e) {
+        console.warn("Не удалось записать загрузчик в дочернее окно:", e);
+      }
+
+      try {
+        // Сохраняем черновик на сервере
         const response = await savePortfolioDraft({
           title: "Моё крутое портфолио",
           sections: droppedBlocks
         });
+
         if (response && response.slug) {
           setCurrentSlug(response.slug);
           const printUrl = `${window.location.origin}/view/${response.slug}?print=true`;
-          window.open(printUrl, '_blank');
+          
+          // 3. Теперь перенаправление сработает гарантированно, и вкладка обновится
+          printWindow.location.href = printUrl;
         } else {
+          printWindow.close();
           alert('Не удалось сохранить портфолио для экспорта.');
         }
       } catch (err: any) {
-        alert('Ошибка сохранения: ' + err.message);
+        printWindow.close();
+        alert('Ошибка сохранения при экспорте: ' + err.message);
       }
     }
   };

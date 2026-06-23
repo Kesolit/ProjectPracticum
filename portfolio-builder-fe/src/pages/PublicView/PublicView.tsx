@@ -72,19 +72,35 @@ const PublicView = () => {
     const loadPortfolio = async () => {
       try {
         if (slug) {
-          const data = await getPublicPortfolio(slug)
-          setPortfolio(data)
+          const data = await getPublicPortfolio(slug);
+          setPortfolio(data);
+          
+          // Сначала выключаем загрузку, чтобы React отрендерил DOM
+          setLoading(false);
+
+          // --- ВЫЗОВ ПЕЧАТИ ПОСЛЕ ОТРИСОВКИ КОНТЕНТА ---
+          const searchParams = new URLSearchParams(window.location.search);
+          if (searchParams.get('print') === 'true') {
+            // Небольшой таймаут в 600мс, чтобы дать браузеру время 
+            // подгрузить все шрифты, стили и аватарку перед вызовом PDF
+            setTimeout(() => {
+              window.print();
+            }, 600);
+          }
+          // ---------------------------------------------
+          
         } else {
-          setError('Ссылка некорректна')
+          setError('Ссылка некорректна');
+          setLoading(false);
         }
       } catch (err: any) {
-        setError('Не удалось загрузить портфолио')
-      } finally {
-        setLoading(false)
+        setError('Не удалось загрузить портфолио');
+        setLoading(false);
       }
-    }
-    loadPortfolio()
-  }, [slug])
+    };
+
+    loadPortfolio();
+  }, [slug]);
   
   if (loading) return <div className="loading">Загрузка стильного портфолио...</div>
   if (error || !portfolio) return <div className="error">{error || 'Портфолио не найдено'}</div>
