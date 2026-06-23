@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
+import { DashboardMobile } from './DashboardMobile';
 
 // Предполагаемые импорты API и иконок (замени на свои пути)
 import { getSearchPortfolios } from '../../api/api'; 
@@ -100,6 +101,15 @@ const PortfolioCard = ({ portfolio }: { portfolio: Portfolio }) => {
 const Dashboard = () => {
   const [sortBy, setSortBy] = useState('new'); // 'popular' или 'new'
   const navigate = useNavigate();
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userData, setUserData] = useState<any>(null);
   const [totalCount, setTotalCount] = useState(0);
@@ -204,6 +214,42 @@ const Dashboard = () => {
     ? ALL_TECHS.filter(t => t.toLowerCase().includes(techSearch.toLowerCase())) 
     : ALL_TECHS.filter(t => t.toLowerCase().includes(techSearch.toLowerCase())).slice(0, 5);
 
+  const isReallyMobile = isMobile || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+if (isReallyMobile) {
+  return (
+    <DashboardMobile
+      portfolios={portfolios}
+      isLoading={isLoading}
+      totalCount={totalCount}
+      sortBy={sortBy}
+      setSortBy={setSortBy}
+      userData={userData}
+      isMenuOpen={isMenuOpen}
+      setIsMenuOpen={setIsMenuOpen}
+      // Передаем стейты фильтров
+      selectedSpecs={selectedSpecs}
+      setSelectedSpecs={setSelectedSpecs}
+      selectedLevels={selectedLevels}
+      setSelectedLevels={setSelectedLevels}
+      selectedTechs={selectedTechs}
+      setSelectedTechs={setSelectedTechs}
+      techSearch={techSearch}
+      setTechSearch={setTechSearch}
+      showAllFilterTechs={showAllFilterTechs}
+      setShowAllFilterTechs={setShowAllFilterTechs}
+      // Константы и методы
+      SPECIALIZATIONS={SPECIALIZATIONS}
+      LEVELS={LEVELS}
+      visibleFilterTechs={visibleFilterTechs}
+      allTechsCount={ALL_TECHS.length}
+      toggleFilter={toggleFilter}
+      handleLevelSelect={handleLevelSelect}
+      resetFilters={resetFilters}
+      removeFilterTag={removeFilterTag}
+    />
+  );
+}
   return (
     <div className="dashboard-layout">
       {/* ХЕДДЕР */}

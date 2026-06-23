@@ -9,6 +9,7 @@ import { GithubBlock } from '../../components/blocks/GithubBlock';
 import { CustomBlock } from '../../components/blocks/CustomBlock';
 import SaveSuccessModal from '../../components/SaveSuccessModal/SaveSuccessModal';
 import { sanitizeMultilineText } from '../../utils/multilineText'
+import { EditorMobile } from './EditorMobile';
 
 // Импорты иконок
 import mainIcon from '../../assets/icons/main.svg'
@@ -363,11 +364,24 @@ const Editor = () => {
   const [isServerSaved, setIsServerSaved] = useState(true); // true = текущие блоки совпадают с сервером
   
   const navigate = useNavigate()
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const [blocks, setBlocks] = useState<any[]>([]);
 
   const [isPublic, setIsPublic] = useState<boolean>(() => {
     const savedVisibility = localStorage.getItem('portfolio_is_public');
     return savedVisibility ? JSON.parse(savedVisibility) : false;
   });
+
+  const updateBlockField = (type: string, field: string, value: any) => {
+    setBlocks(prev => prev.map(b => b.type === type ? { ...b, [field]: value } : b));
+  };
 
   useEffect(() => {
     localStorage.setItem('portfolio_is_public', JSON.stringify(isPublic));
@@ -855,6 +869,62 @@ const Editor = () => {
     userData?.portfolioViews ??
     0;
 
+  const isReallyMobile = isMobile || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+  if (isMobile) {
+  return (
+    <>
+      <EditorMobile 
+        blocks={droppedBlocks} // Связываем с твоим реальным массивом
+        addBlock={(type, name) => {
+          if (droppedBlocks.some(b => b.type === type)) return;
+          const template = EDITOR_BLOCK_CATALOG.find(b => b.type === type);
+          if (template) {
+            setDroppedBlocks(prev => [...prev, { ...template, content: {} }]);
+          }
+        }}
+        removeBlock={(type) => setDroppedBlocks(prev => prev.filter(b => b.type !== type))}
+        
+        // Передаем правильное обновление контента: находим индекс блока и отдаем обновленный контент
+        updateBlockField={(type, field, value) => {
+          const index = droppedBlocks.findIndex(b => b.type === type);
+          if (index !== -1) {
+            const currentBlock = droppedBlocks[index];
+            const updatedContent = {
+              ...(currentBlock.content || {}),
+              [field]: value
+            };
+            updateBlockContent(index, updatedContent);
+          }
+        }}
+        
+        saveDraft={handleSave} // Твоя оригинальная функция сохранения
+        isSaving={false}                 
+        isInitialLoading={isLoadingDraft} // Твой стейт загрузки черновика с бэка
+        renderBlockContent={renderBlockContent}
+        
+        // Перемещение блоков внутри droppedBlocks
+        moveBlock={(index, direction) => {
+          const nextIndex = direction === 'up' ? index - 1 : index + 1;
+          if (nextIndex < 0 || nextIndex >= droppedBlocks.length) return;
+          setDroppedBlocks(prev => {
+            const result = [...prev];
+            const [removed] = result.splice(index, 1);
+            result.splice(nextIndex, 0, removed);
+            return result;
+          });
+        }}
+      />
+      
+      {/* Модалка успешного сохранения */}
+      <SaveSuccessModal 
+        isOpen={isModalOpen} 
+        publicUrl={currentUrl} 
+        onClose={() => setIsModalOpen(false)} 
+      />
+    </>
+  );
+}
   return (
     <div className="editor">
       <header className="editor-header">

@@ -1,0 +1,425 @@
+.mobile-editor-context .mobile-body-wrapper {
+  background: #e5e7eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.mobile-editor-context .mobile-screen {
+  width: 390px;
+  height: 844px;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Шапка */
+.mobile-editor-context .editor-mobile-header {
+  width: 100%;
+  height: 60px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.mobile-editor-context .header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.mobile-editor-context .mobile-logo-img {
+  width: 28px;
+  height: 28px;
+}
+
+.mobile-editor-context .mobile-logo-text {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #111827;
+}
+
+.mobile-editor-context .mobile-save-btn {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.mobile-editor-context .mobile-save-btn:disabled {
+  background: #9ca3af;
+}
+
+/* Холст */
+.mobile-editor-context .editor-mobile-content {
+  flex: 1;
+  padding: 24px 16px 80px 16px; /* Большой нижний отступ под кнопку */
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.mobile-editor-context .canvas-bg {
+  background-size: 20px 20px;
+  background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+}
+
+.mobile-editor-context .empty-canvas-placeholder {
+  text-align: center;
+  margin-top: 100px;
+  color: #6b7280;
+}
+
+.mobile-editor-context .empty-canvas-placeholder .sub {
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+/* Карточки активных блоков */
+.mobile-editor-context .mobile-active-blocks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mobile-editor-context .mobile-active-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px 14px 14px 14px;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.mobile-editor-context .card-badge {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.mobile-editor-context .mobile-delete-block-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Инпуты внутри карточек */
+.mobile-editor-context .mobile-card-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.mobile-editor-context .mobile-card-inputs input,
+.mobile-editor-context .mobile-card-inputs textarea {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  background: #fafafa;
+  font-family: inherit;
+}
+
+.mobile-editor-context .mobile-card-inputs input:focus,
+.mobile-editor-context .mobile-card-inputs textarea:focus {
+  outline: none;
+  border-color: #4f46e5;
+  background: white;
+}
+
+.mobile-editor-context .block-stub-text {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 4px 0 0 0;
+}
+
+/* Подвал */
+.mobile-editor-context .editor-mobile-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.mobile-editor-context .btn-toggle-add-menu {
+  width: 100%;
+  height: 44px;
+  background: white;
+  border: 2px dashed #d1d5db;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+/* Выплывающий шторка-меню */
+.mobile-editor-context .mobile-add-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+}
+
+.mobile-editor-context .mobile-add-sheet {
+  width: 100%;
+  background: white;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px 16px 32px 16px;
+  box-sizing: border-box;
+  max-height: 70%;
+  overflow-y: auto;
+}
+
+.mobile-editor-context .sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.mobile-editor-context .sheet-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #111827;
+}
+
+.mobile-editor-context .close-sheet {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #6b7280;
+}
+
+.mobile-editor-context .sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.mobile-editor-context .sheet-item-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #374151;
+  position: relative;
+}
+
+.mobile-editor-context .sheet-item-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.mobile-editor-context .sheet-item-btn.already-added {
+  opacity: 0.5;
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.mobile-editor-context .added-label {
+  font-size: 10px;
+  color: #10b981;
+  font-weight: 600;
+}
+
+/* Лоадер */
+.mobile-editor-loading {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #f9fafb;
+  color: #4b5563;
+}
+.mobile-editor-loading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Переопределяем десктопные классы внутри мобильного телефона */
+.mobile-editor-context .canvas-active-blocks-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mobile-editor-context .canvas-live-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Фикс для полей ввода, чтобы они не улетали за границы экрана смартфона */
+.mobile-editor-context .canvas-editable-input,
+.mobile-editor-context .canvas-editable-textarea {
+  font-size: 14px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Кнопки навигации в хедере */
+.mobile-editor-context .header-left-nav,
+.mobile-editor-context .header-right-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-editor-context .mobile-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mobile-editor-context .mobile-nav-icon-btn {
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+}
+
+.mobile-editor-context .mobile-nav-icon-btn:active {
+  background: #f3f4f6;
+}
+
+.mobile-editor-context .mobile-nav-icon-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+/* Панель управления карточкой блока (справа) */
+.mobile-editor-context .mobile-card-controls {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 5;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 4px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.mobile-editor-context .mobile-card-controls .move-btn,
+.mobile-editor-context .mobile-card-controls .mobile-remove-btn {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.mobile-editor-context .mobile-card-controls .mobile-remove-btn {
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #fca5a5;
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: 2px;
+}
+
+.mobile-editor-context .mobile-card-controls .move-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Фикс десктопной кнопки удаления, чтобы они не дублировались */
+.mobile-editor-context .remove-block-btn {
+  display: none !important;
+}
+
+/* Адаптация SaveSuccessModal под мобильные экраны */
+@media (max-width: 768px) {
+  /* Если у твоего контейнера модалки другой класс, замени .modal-content на него */
+  .modal-content, 
+  [class*="modal-content"], 
+  [class*="Modal"] {
+    width: 90% !important;
+    max-width: 360px !important;
+    padding: 20px 16px !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Делаем инпут со ссылкой и кнопку копирования адаптивными */
+  .modal-content input,
+  [class*="modal-content"] input {
+    font-size: 13px !important;
+  }
+}

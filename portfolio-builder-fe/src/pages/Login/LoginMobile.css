@@ -1,0 +1,234 @@
+/* Базовые обертки мобильного экрана */
+.mobile-login-context .mobile-body-wrapper {
+  background: #e5e7eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.mobile-login-context .mobile-screen {
+  width: 390px;
+  height: 844px;
+  background: #f4f5f6;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Шапка мобильного экрана */
+.mobile-login-context .login-header {
+  width: 100%;
+  height: 60px;
+  background: white;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid #e5e7eb;
+  box-sizing: border-box;
+}
+
+.mobile-login-context .login-header .logo {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.mobile-login-context .login-header .logo span {
+  color: #4f46e5;
+}
+
+/* Главный контент скролла с учетом фикса багов наслоения! */
+.mobile-login-context .login-content {
+  flex: 1;
+  padding: 150px 20px 24px 20px; /* Большой отступ сверху, чтобы текст не залезал под шапку */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.mobile-login-context .welcome-text {
+  margin-bottom: 24px;
+}
+
+.mobile-login-context .welcome-text {
+  margin-top: 12px; /* Добавляем отступ сверху */
+  margin-bottom: 24px;
+}
+
+.mobile-login-context .welcome-text h2 {
+  font-size: 1.5rem;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.mobile-login-context .welcome-text p {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Форма и инпуты */
+.mobile-login-context .login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mobile-login-context .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mobile-login-context .input-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.mobile-login-context .input-group input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.mobile-login-context .input-group input:focus {
+  border-color: #4f46e5;
+  outline: none;
+}
+
+/* Поле пароля с кнопкой-глазом */
+.mobile-login-context .password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.mobile-login-context .mobile-eye-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 4px;
+}
+
+/* Опции логина */
+.mobile-login-context .login-options {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -4px;
+}
+
+.mobile-login-context .forgot-password-link {
+  font-size: 0.85rem;
+  color: #4f46e5;
+  cursor: pointer;
+}
+
+/* Кнопки */
+.mobile-login-context .btn-primary {
+  width: 100%;
+  height: 48px;
+  background: #a5b4fc; /* Неактивный/активный цвет как на макетах */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+
+.mobile-login-context .btn-primary:not(:disabled) {
+  background: #4f46e5;
+}
+
+/* Разделитель "или" */
+.mobile-login-context .divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.8rem;
+  margin: 24px 0;
+}
+
+.mobile-login-context .divider::before,
+.mobile-login-context .divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mobile-login-context .divider:not(:empty)::before { margin-right: .5em; }
+.mobile-login-context .divider:not(:empty)::after { margin-left: .5em; }
+
+/* Соц кнопки */
+.mobile-login-context .social-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.mobile-login-context .btn-social {
+  flex: 1;
+  height: 44px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Перенаправление внизу */
+.mobile-login-context .footer-redirect {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 32px;
+}
+
+.mobile-login-context .footer-redirect span {
+  color: #4f46e5;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Обработка ошибок */
+.mobile-login-context .mobile-error-message {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.mobile-login-context .mobile-input-error {
+  border-color: #dc2626 !important;
+}
+
+.mobile-login-context .mobile-error-text {
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 2px;
+}

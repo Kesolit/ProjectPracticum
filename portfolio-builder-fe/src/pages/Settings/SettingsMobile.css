@@ -1,0 +1,261 @@
+/* Контекст-изолятор страницы настроек */
+.mobile-settings-context .mobile-body-wrapper {
+  background: #e5e7eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.mobile-settings-context .mobile-screen {
+  width: 390px;
+  height: 844px;
+  background: #f4f5f6;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Фиксированная шапка */
+.mobile-settings-context .settings-header {
+  width: 100%;
+  height: 60px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid #e5e7eb;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.mobile-settings-context .back-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: #4b5563;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.mobile-settings-context .header-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Контент скролла с учетом предотвращения наслоений! */
+.mobile-settings-context .settings-content {
+  flex: 1;
+  padding: 36px 16px 24px 16px; /* Большой верхний отступ исключает наслоение на шапку */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Карточки секций */
+.mobile-settings-context .settings-section {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mobile-settings-context .settings-section h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Поля ввода внутри секций */
+.mobile-settings-context .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mobile-settings-context .input-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.mobile-settings-context .input-group input,
+.mobile-settings-context .input-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.mobile-settings-context .input-group input:focus,
+.mobile-settings-context .input-group textarea:focus {
+  border-color: #4f46e5;
+  background: white;
+  outline: none;
+}
+
+/* Кнопки сохранения внутри блоков */
+.mobile-settings-context .btn-save-section {
+  width: 100%;
+  height: 40px;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s;
+}
+
+.mobile-settings-context .btn-save-section:hover {
+  background: #4338ca;
+}
+
+/* Интеграции */
+.mobile-settings-context .integration-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.mobile-settings-context .integration-item:last-child {
+  border-bottom: none;
+}
+
+.mobile-settings-context .integration-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-settings-context .integration-icon {
+  font-size: 1.5rem;
+}
+
+.mobile-settings-context .integration-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.mobile-settings-context .integration-status {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.mobile-settings-context .integration-status.connected {
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* Кнопки интеграций */
+.mobile-settings-context .btn-action-connect {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+}
+
+.mobile-settings-context .btn-action-disconnect {
+  padding: 6px 12px;
+  border: 1px solid #fee2e2;
+  border-radius: 6px;
+  background: #fef2f2;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #dc2626;
+  cursor: pointer;
+}
+
+/* Опасная зона */
+.mobile-settings-context .danger-zone {
+  border-color: #fca5a5;
+  background: #fffafb;
+}
+
+.mobile-settings-context .danger-zone p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.mobile-settings-context .btn-danger {
+  width: 100%;
+  height: 40px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+/* Обработка серверных ошибок */
+.mobile-settings-context .mobile-error-message {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.mobile-settings-context .mobile-message {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+}
+.mobile-settings-context .mobile-message.success {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+.mobile-settings-context .mobile-message.error {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+.mobile-settings-context .section-desc {
+  margin: -6px 0 4px 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.3;
+}
+.mobile-settings-context .danger-zone-content h4 {
+  margin: 8px 0 4px 0;
+  font-size: 0.95rem;
+  color: #111827;
+}
+.mobile-settings-context .danger-zone-content p {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0 0 4px 0;
+}

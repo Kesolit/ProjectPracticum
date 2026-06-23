@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SettingsPage.css';
 import logo from '../../assets/logo.svg'; 
 import githubIcon from '../../assets/icons/github.svg'; 
 import { changePassword, deleteAccount } from '../../api/api';
+import { SettingsMobile } from './SettingsMobile'; // Убедись, что путь правильный
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
 
+  // 1. Стейт контроля брейкпоинта экрана
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
   // Состояния для полей пароля
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -31,57 +41,77 @@ const SettingsPage: React.FC = () => {
   };
 
   // Обработчик смены пароля
-const handleChangePassword = async () => {
-  if (!currentPassword || !newPassword || !repeatPassword) {
-    setMessage({ type: 'error', text: 'Заполните все поля пароля' });
-    return;
-  }
-  if (newPassword !== repeatPassword) {
-    setMessage({ type: 'error', text: 'Новый пароль и подтверждение не совпадают' });
-    return;
-  }
-  if (newPassword.length < 6) {
-    setMessage({ type: 'error', text: 'Пароль должен быть не менее 6 символов' });
-    return;
-  }
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !repeatPassword) {
+      setMessage({ type: 'error', text: 'Заполните все поля пароля' });
+      return;
+    }
+    if (newPassword !== repeatPassword) {
+      setMessage({ type: 'error', text: 'Новый пароль и подтверждение не совпадают' });
+      return;
+    }
+    if (newPassword.length < 6) {
+      setMessage({ type: 'error', text: 'Пароль должен быть не менее 6 символов' });
+      return;
+    }
 
-  setIsSaving(true);
-  setMessage(null);
-  try {
-    await changePassword(currentPassword, newPassword);
-    setMessage({ type: 'success', text: 'Пароль успешно изменён' });
-    setCurrentPassword('');
-    setNewPassword('');
-    setRepeatPassword('');
-  } catch (err: any) {
-    setMessage({ type: 'error', text: err.message || 'Ошибка смены пароля' });
-  } finally {
-    setIsSaving(false);
-  }
-};
+    setIsSaving(true);
+    setMessage(null);
+    try {
+      await changePassword(currentPassword, newPassword);
+      setMessage({ type: 'success', text: 'Пароль успешно изменён' });
+      setCurrentPassword('');
+      setNewPassword('');
+      setRepeatPassword('');
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Ошибка смены пароля' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-// Обработчик удаления аккаунта
-const handleDeleteAccount = async () => {
-  const confirmed = window.confirm(
-    'Вы уверены, что хотите удалить аккаунт? Все данные (портфолио, настройки) будут безвозвратно удалены.'
-  );
-  if (!confirmed) return;
+  // Обработчик удаления аккаунта
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Вы уверены, что хотите удалить аккаунт? Все данные (портфолио, настройки) будут безвозвратно удалены.'
+    );
+    if (!confirmed) return;
 
-  setIsDeleting(true);
-  try {
-    await deleteAccount();
-    // Очищаем локальное хранилище и перенаправляем на страницу входа
-    localStorage.clear();
-    navigate('/login');
-  } catch (err: any) {
-    setMessage({ type: 'error', text: err.message || 'Ошибка удаления аккаунта' });
-  } finally {
-    setIsDeleting(false);
-  }
-};
+    setIsDeleting(true);
+    try {
+      await deleteAccount();
+      localStorage.clear();
+      navigate('/login');
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Ошибка удаления аккаунта' });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleLogoClick = () => navigate('/');
   const handleBack = () => navigate(-1);
+
+  // 2. Если экран мобильный, переключаем рендер и ТЕПЕРЬ ПЕРЕДАЕМ ВСЕ ПРОПСЫ
+  if (isMobile) {
+    return (
+      <SettingsMobile 
+        currentPassword={currentPassword}
+        setCurrentPassword={setCurrentPassword}
+        newPassword={newPassword}
+        setNewPassword={setNewPassword}
+        repeatPassword={repeatPassword}
+        setRepeatPassword={setRepeatPassword}
+        handleChangePassword={handleChangePassword}
+        handleDeleteAccount={handleDeleteAccount}
+        connectedProviders={connectedProviders}
+        toggleProvider={toggleProvider}
+        message={message}
+        isSaving={isSaving}
+        isDeleting={isDeleting}
+      />
+    );
+  }
 
   return (
     <div className="settings-page-wrapper">
@@ -98,8 +128,6 @@ const handleDeleteAccount = async () => {
       </header>
 
       <main className="settings-main-container">
-        
-        {/* Заголовок страницы */}
         <div className="settings-page-header">
           <button className="settings-back-btn" onClick={handleBack}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -110,6 +138,7 @@ const handleDeleteAccount = async () => {
           <h1 className="settings-page-title">Настройки аккаунта</h1>
         </div>
         <p className="settings-page-subtitle">Управление безопасностью, интеграциями и профилем</p>
+        
         {message && (
           <div className={`settings-message ${message.type}`}>
             {message.text}
@@ -173,7 +202,6 @@ const handleDeleteAccount = async () => {
           </div>
           
           <div className="settings-card-list">
-            {/* Интеграция GitHub */}
             <div className="integration-item">
               <div className="integration-info">
                 <div className="integration-icon">
@@ -194,7 +222,6 @@ const handleDeleteAccount = async () => {
               </button>
             </div>
 
-            {/* Интеграция Google */}
             <div className="integration-item">
               <div className="integration-info">
                 <div className="integration-icon google-icon-wrap">
@@ -242,7 +269,6 @@ const handleDeleteAccount = async () => {
             </button>
           </div>
         </section>
-
       </main>
     </div>
   );
