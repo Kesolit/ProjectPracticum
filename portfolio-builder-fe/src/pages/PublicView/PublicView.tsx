@@ -95,7 +95,11 @@ const PublicView = () => {
         return (
           <div className="main-block-public">
             <div className="main-avatar">
-              <span role="img" aria-label="avatar">👨‍💻</span>
+              {content?.avatarUrl ? (
+                <img src={content.avatarUrl} alt="" className="main-avatar-img" />
+              ) : (
+                <span role="img" aria-label="avatar">👨‍💻</span>
+              )}
             </div>
             <h1>{content?.greeting || 'Привет, я Алексей Иванов'}</h1>
             <h3 className="main-role">{content?.role || 'Frontend Разработчик'}</h3>
