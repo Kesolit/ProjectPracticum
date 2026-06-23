@@ -152,23 +152,30 @@ const PublicView = () => {
         );
 
       case 'projects':
-        return (
-          <div className="section-container">
-            <h2 className="section-title">Кейсы</h2>
-            <div className="projects-grid">
-              {content?.projects?.map((p: any, i: number) => (
-                <div key={i} className="case-card">
-                  <div className="case-cover" style={{ background: i % 2 === 0 ? 'linear-gradient(135deg, #818CF8, #C084FC)' : 'linear-gradient(135deg, #34D399, #2DD4BF)' }}></div>
-                  <div className="case-info">
-                    <h4 className="case-title">{p.title}</h4>
-                    <a href={p.link} className="case-link">{p.link || 'github.com/link'}</a>
-                    <p className="case-description">{p.description || p.desc}</p>
-                  </div>
-                </div>
-              ))}
+  return (
+    <div className="section-container">
+      <h2 className="section-title">Кейсы</h2>
+      <div className="projects-grid">
+        {content?.projects?.map((p: any, i: number) => (
+          <div key={i} className="case-card">
+            <div 
+              className="case-cover" 
+              style={{
+                backgroundImage: p.cover ? `url(${p.cover})` : (i % 2 === 0 ? 'linear-gradient(135deg, #818CF8, #C084FC)' : 'linear-gradient(135deg, #34D399, #2DD4BF)'),
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            ></div>
+            <div className="case-info">
+              <h4 className="case-title">{p.title}</h4>
+              <a href={p.link} className="case-link">{p.link || 'github.com/link'}</a>
+              <p className="case-description">{p.description || p.desc}</p>
             </div>
           </div>
-        );
+        ))}
+      </div>
+    </div>
+  );
 
       case 'experience':
         return (

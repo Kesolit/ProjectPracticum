@@ -36,7 +36,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 88px;
   padding: 0 88px;
   overflow: hidden;
 }

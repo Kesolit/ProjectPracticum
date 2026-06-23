@@ -55,6 +55,7 @@ interface Project {
   title: string
   link: string
   desc: string
+  cover?: string
 }
 
 interface Experience {
@@ -89,8 +90,8 @@ const ProjectsBlock = ({ content, onChange }: { content: any, onChange: (data: a
   }, [projects]);
 
   const addProject = () => {
-    setProjects([...projects, { id: Date.now(), title: '', link: '', desc: '' }])
-  }
+  setProjects([...projects, { id: Date.now(), title: '', link: '', desc: '', cover: '' }])
+}
 
   const updateProject = (id: number, field: keyof Project, value: string) => {
     setProjects(projects.map(project => 
@@ -102,6 +103,18 @@ const ProjectsBlock = ({ content, onChange }: { content: any, onChange: (data: a
     setProjects(projects.filter(project => project.id !== id))
   }
 
+  const handleCoverUpload = (projectId: number, e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0]
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = (event) => {
+    const dataUrl = event.target?.result as string
+    updateProject(projectId, 'cover', dataUrl)
+  }
+  reader.readAsDataURL(file)
+  e.target.value = '' // чтобы можно было загрузить тот же файл снова
+}
   return (
     <div className="projects-container">
       <h2 className="projects-main-title">Кейсы</h2>
@@ -109,7 +122,25 @@ const ProjectsBlock = ({ content, onChange }: { content: any, onChange: (data: a
         {projects.map((project) => (
           <div key={project.id} className="project-card-item fade-in">
             <button className="project-remove-btn" onClick={() => removeProject(project.id)} title="Удалить проект">✕</button>
-            <div className="project-cover-placeholder"><span>+ обложка</span></div>
+            <label 
+              className="project-cover-placeholder"
+              style={{ 
+                backgroundImage: project.cover ? `url(${project.cover})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                cursor: 'pointer'
+              }}
+              htmlFor={`cover-upload-${project.id}`}
+            >
+              {!project.cover && <span>+ обложка</span>}
+              <input
+                type="file"
+                id={`cover-upload-${project.id}`}
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => handleCoverUpload(project.id, e)}
+              />
+            </label>
             <input 
               className="project-input-title" 
               placeholder="Название проекта"
@@ -960,6 +991,13 @@ const Editor = () => {
             return result;
           });
         }}
+        isLoggedIn={isLoggedIn} 
+        userData={userData}
+        onLogout={handleLogout}  
+        onPreview={handlePreview}
+       onExport={handleExport}
+       isPublic={isPublic}
+  onTogglePublic={() => setIsPublic(!isPublic)} 
       />
       
       {/* Модалка успешного сохранения */}
