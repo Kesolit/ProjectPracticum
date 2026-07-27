@@ -1628,3 +1628,85 @@
   border-color: #4F86FF;
   color: #4F86FF;
 }
+
+/* Позволяем списку блоков скроллиться, чтобы кнопка не уезжала за экран */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.blocks-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+/* Стили самой кнопки проверки ИИ */
+.sidebar-footer-action {
+  padding-top: 16px;
+  border-top: 1px solid #E5E7EB;
+  margin-top: auto;
+}
+
+.sidebar-ai-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-ai-btn:hover {
+  background: #F9FAFB;
+  border-color: #9CA3AF;
+}
+
+/* Делаем левую панель flex-контейнером */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.blocks-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+/* Стили кнопки ИИ в левом меню */
+.sidebar-footer-action {
+  padding-top: 16px;
+  border-top: 1px solid #E5E7EB;
+  margin-top: auto;
+}
+
+.sidebar-ai-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-ai-btn:hover {
+  background: #F9FAFB;
+  border-color: #9CA3AF;
+}

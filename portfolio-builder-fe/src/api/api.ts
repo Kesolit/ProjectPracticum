@@ -259,3 +259,17 @@ export const deleteAccount = async () => {
   }
   return response.json();
 };
+
+export const getAiRecommendations = async (sections: any[]) => {
+  const response = await authFetch(`${API_BASE_URL}/api/ai/analyze`, {
+    method: 'POST',
+    body: JSON.stringify({ sections }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || 'Ошибка при получении ответа от ИИ');
+  }
+
+  return response.json();
+};

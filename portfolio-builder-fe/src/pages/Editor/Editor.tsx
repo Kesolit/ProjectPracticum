@@ -28,6 +28,8 @@ import iconArrow from '../../assets/icon-arrow.svg'
 import iconStatistics from '../../assets/icon-statistics.svg'
 import iconSettings from '../../assets/icon-settings.svg'
 
+import { AiAssistantSidebar } from '../../components/editor/AiAssistant/AiAssistantSidebar';
+
 interface BlockType {
   name: string
   desc: string
@@ -379,6 +381,7 @@ const clearLocalStorageDraft = () => {
 };
 
 const Editor = () => {
+  const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPortfolioNavDropdownOpen, setIsPortfolioNavDropdownOpen] = useState(false);
   const [userData, setUserData] = useState<any>(null);
@@ -949,73 +952,66 @@ const Editor = () => {
   const isReallyMobile = isMobile || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
   if (isMobile) {
+    return (
+      <>
+        <EditorMobile 
+          blocks={droppedBlocks}
+          addBlock={(type, name) => {
+            if (droppedBlocks.some(b => b.type === type)) return;
+            const template = EDITOR_BLOCK_CATALOG.find(b => b.type === type);
+            if (template) {
+              setDroppedBlocks(prev => [...prev, { ...template, content: {} }]);
+            }
+          }}
+          removeBlock={(type) => setDroppedBlocks(prev => prev.filter(b => b.type !== type))}
+          updateBlockField={(type, field, value) => {
+            const index = droppedBlocks.findIndex(b => b.type === type);
+            if (index !== -1) {
+              const currentBlock = droppedBlocks[index];
+              const updatedContent = {
+                ...(currentBlock.content || {}),
+                [field]: value
+              };
+              updateBlockContent(index, updatedContent);
+            }
+          }}
+          saveDraft={handleSave}
+          isSaving={false}                
+          isInitialLoading={isLoadingDraft}
+          renderBlockContent={renderBlockContent}
+          moveBlock={(index, direction) => {
+            const nextIndex = direction === 'up' ? index - 1 : index + 1;
+            if (nextIndex < 0 || nextIndex >= droppedBlocks.length) return;
+            setDroppedBlocks(prev => {
+              const result = [...prev];
+              const [removed] = result.splice(index, 1);
+              result.splice(nextIndex, 0, removed);
+              return result;
+            });
+          }}
+          isLoggedIn={isLoggedIn} 
+          userData={userData}
+          onLogout={handleLogout}  
+          onPreview={handlePreview}
+          onExport={handleExport}
+          isPublic={isPublic}
+          onTogglePublic={() => setIsPublic(!isPublic)} 
+        />
+        <SaveSuccessModal isOpen={isModalOpen} publicUrl={currentUrl} onClose={() => setIsModalOpen(false)} />
+      </>
+    );
+  }
+
   return (
-    <>
-      <EditorMobile 
-        blocks={droppedBlocks} // Связываем с твоим реальным массивом
-        addBlock={(type, name) => {
-          if (droppedBlocks.some(b => b.type === type)) return;
-          const template = EDITOR_BLOCK_CATALOG.find(b => b.type === type);
-          if (template) {
-            setDroppedBlocks(prev => [...prev, { ...template, content: {} }]);
-          }
-        }}
-        removeBlock={(type) => setDroppedBlocks(prev => prev.filter(b => b.type !== type))}
-        
-        // Передаем правильное обновление контента: находим индекс блока и отдаем обновленный контент
-        updateBlockField={(type, field, value) => {
-          const index = droppedBlocks.findIndex(b => b.type === type);
-          if (index !== -1) {
-            const currentBlock = droppedBlocks[index];
-            const updatedContent = {
-              ...(currentBlock.content || {}),
-              [field]: value
-            };
-            updateBlockContent(index, updatedContent);
-          }
-        }}
-        
-        saveDraft={handleSave} // Твоя оригинальная функция сохранения
-        isSaving={false}                 
-        isInitialLoading={isLoadingDraft} // Твой стейт загрузки черновика с бэка
-        renderBlockContent={renderBlockContent}
-        
-        // Перемещение блоков внутри droppedBlocks
-        moveBlock={(index, direction) => {
-          const nextIndex = direction === 'up' ? index - 1 : index + 1;
-          if (nextIndex < 0 || nextIndex >= droppedBlocks.length) return;
-          setDroppedBlocks(prev => {
-            const result = [...prev];
-            const [removed] = result.splice(index, 1);
-            result.splice(nextIndex, 0, removed);
-            return result;
-          });
-        }}
-        isLoggedIn={isLoggedIn} 
-        userData={userData}
-        onLogout={handleLogout}  
-        onPreview={handlePreview}
-       onExport={handleExport}
-       isPublic={isPublic}
-  onTogglePublic={() => setIsPublic(!isPublic)} 
-      />
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
       
-      {/* Модалка успешного сохранения */}
-      <SaveSuccessModal 
-        isOpen={isModalOpen} 
-        publicUrl={currentUrl} 
-        onClose={() => setIsModalOpen(false)} 
-      />
-    </>
-  );
-}
-  return (
-    <div className="editor">
-      <header className="editor-header">
-        <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-          <img src={logo} alt="dev/folio" className="logo-icon" />
-          <span className="logo-text">dev/folio</span>
-          <button  className="search-portfolio-btn"
+      {/* Левая и центральная часть (редактор) */}
+      <div className="editor" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <header className="editor-header">
+          <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+            <img src={logo} alt="dev/folio" className="logo-icon" />
+            <span className="logo-text">dev/folio</span>
+            <button className="search-portfolio-btn"
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
@@ -1024,193 +1020,208 @@ const Editor = () => {
             >
               Поиск
             </button>
-        </div>
-        <div className="header-actions">
-          <button className="header-btn preview-btn" onClick={handlePreview}><img src={eyeOn}/>Предпросмотр</button>
-          <button className="header-btn export-btn" onClick={handleExport}><img src={download}/> Экспорт</button>
-          <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
-          
-          {isLoggedIn ? (
-          <div className="profile-container">
-            <div className="profile-avatar-wrapper" onClick={(e) => { e.stopPropagation(); setIsPortfolioNavDropdownOpen(false); setIsMenuOpen(!isMenuOpen); }}>
-              <img 
-                src="https://via.placeholder.com/40" 
-                alt="User" 
-                className="profile-avatar"
-              />
-            </div>
-
-            {isMenuOpen && (
-              <div className="user-dropdown-menu" onClick={(e) => e.stopPropagation()} role="menu">
-                <div className="dropdown-header">
-                  <span className="user-fullname">
-                    {userData?.fullName || `${userFirstName} ${userLastName}`.trim()}
-                  </span>
-                  <span className="user-email">
-                    {userData?.email || 'email@example.com'}
-                  </span>
+          </div>
+          <div className="header-actions">
+            <button className="header-btn preview-btn" onClick={handlePreview}><img src={eyeOn} alt="preview"/>Предпросмотр</button>
+            <button className="header-btn export-btn" onClick={handleExport}><img src={download} alt="export"/> Экспорт</button>
+            <button className="header-btn save-btn" onClick={handleSave}>Сохранить портфолио</button>
+            
+            {isLoggedIn ? (
+              <div className="profile-container">
+                <div className="profile-avatar-wrapper" onClick={(e) => { e.stopPropagation(); setIsPortfolioNavDropdownOpen(false); setIsMenuOpen(!isMenuOpen); }}>
+                  <img 
+                    src={userData?.avatarUrl || "https://via.placeholder.com/40"} 
+                    alt="User" 
+                    className="profile-avatar"
+                  />
                 </div>
 
-                <div className="dropdown-divider" aria-hidden />
+                {isMenuOpen && (
+                  <div className="user-dropdown-menu" onClick={(e) => e.stopPropagation()} role="menu">
+                    <div className="dropdown-header">
+                      <span className="user-fullname">
+                        {userData?.fullName || `${userFirstName} ${userLastName}`.trim()}
+                      </span>
+                      <span className="user-email">
+                        {userData?.email || 'email@example.com'}
+                      </span>
+                    </div>
 
-                <button
-                  type="button"
-                  className="dropdown-item"
-                  role="menuitem"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    navigate('/dashboard');
-                  }}
-                >
-                  <span className="item-content-left">
-                    <img src={iconLinkBlack} alt="" className="item-icon-svg" width={18} height={18} />
-                    <span className="dropdown-item-label">Моё портфолио</span>
-                  </span>
-                  <img src={iconArrow} alt="" className="item-arrow-svg" width={12} height={12} />
-                </button>
+                    <div className="dropdown-divider" aria-hidden />
 
-                <button
-                  type="button"
-                  className="dropdown-item"
-                  role="menuitem"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    navigate('/stats');
-                  }}
-                >
-                  <span className="item-content-left">
-                    <img src={iconStatistics} alt="" className="item-icon-svg" width={18} height={18} />
-                    <span className="dropdown-item-label">Статистика просмотров</span>
-                  </span>
-                  <span className="item-stats-count">{portfolioViews}</span>
-                </button>
+                    <button
+                      type="button"
+                      className="dropdown-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigate('/dashboard');
+                      }}
+                    >
+                      <span className="item-content-left">
+                        <img src={iconLinkBlack} alt="" className="item-icon-svg" width={18} height={18} />
+                        <span className="dropdown-item-label">Моё портфолио</span>
+                      </span>
+                      <img src={iconArrow} alt="" className="item-arrow-svg" width={12} height={12} />
+                    </button>
 
-                <button
-                  type="button"
-                  className="dropdown-item dropdown-item--plain-end"
-                  role="menuitem"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    navigate('/settings');
-                  }}
-                >
-                  <span className="item-content-left">
-                    <img src={iconSettings} alt="" className="item-icon-svg" width={18} height={18} />
-                    <span className="dropdown-item-label">Настройки аккаунта</span>
-                  </span>
-                </button>
+                    <button
+                      type="button"
+                      className="dropdown-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigate('/stats');
+                      }}
+                    >
+                      <span className="item-content-left">
+                        <img src={iconStatistics} alt="" className="item-icon-svg" width={18} height={18} />
+                        <span className="dropdown-item-label">Статистика просмотров</span>
+                      </span>
+                      <span className="item-stats-count">{portfolioViews}</span>
+                    </button>
 
-                <div className="dropdown-divider" aria-hidden />
+                    <button
+                      type="button"
+                      className="dropdown-item dropdown-item--plain-end"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigate('/settings');
+                      }}
+                    >
+                      <span className="item-content-left">
+                        <img src={iconSettings} alt="" className="item-icon-svg" width={18} height={18} />
+                        <span className="dropdown-item-label">Настройки аккаунта</span>
+                      </span>
+                    </button>
 
-                <button type="button" className="dropdown-logout" role="menuitem" onClick={handleLogout}>
-                  Выйти из аккаунта
-                </button>
+                    <div className="dropdown-divider" aria-hidden />
+
+                    <button type="button" className="dropdown-logout" role="menuitem" onClick={handleLogout}>
+                      Выйти из аккаунта
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="auth-group">
+                <button className="header-btn login-link-btn" onClick={() => navigate('/login')}>Войти</button>
+                <button className="header-btn register-link-btn" onClick={() => navigate('/register')}>Зарегистрироваться</button>
               </div>
             )}
           </div>
-          ) : (
-            <div className="auth-group">
-              <button className="header-btn login-link-btn" onClick={() => navigate('/login')}>Войти</button>
-              <button className="header-btn register-link-btn" onClick={() => navigate('/register')}>Зарегистрироваться</button>
-            </div>
-          )}
-        </div>
-      </header>
+        </header>
 
-      <div className="editor-main">
-        <aside className="sidebar">
-          <h2>Элементы конструктора</h2>
-          <p className="hint">Перетащите блоки для создания портфолио</p>
-          <div className="blocks-list">
-            {EDITOR_BLOCK_CATALOG.map((block, idx) => (
-              <div
-                key={idx}
-                className={`sidebar-item sidebar-item-${block.type} block-card draggable`}
-                draggable
-                onDragStart={(e) => handleDragStart(e, block)}
-                onDrag={handleDrag}
-                onDragEnd={handleDragEnd}
-              >
-                {renderBlockContent(block, false)}
-              </div>
-            ))}
-          </div>
-        </aside>
-
-        <main className="canvas" onDrop={handleDrop} onDragOver={handleDragOver}>
-            <div className="visibility-toggle-container">
-            <span className="visibility-toggle-label">
-              Публичный доступ
-            </span>
-            <label className="visibility-switch">
-              <input 
-                type="checkbox" 
-                checked={isPublic} 
-                onChange={(e) => setIsPublic(e.target.checked)} 
-              />
-              <span className="visibility-slider"></span>
-            </label>
-          </div>
-
-          {isLoadingDraft ? (
-            <div className='loading-draft'>Загрузка вашего замечательного портфолио...</div>
-          ) : (
-            droppedBlocks.length === 0 ? (
-              <div className="empty-state">
-                <h3>Начните создавать свое портфолио</h3>
-                <p>Перетащите компоненты из левой боковой панели, чтобы создать идеальное портфолио разработчика.</p>
-                <div className="tip">Совет: Начните с Главного блока, чтобы представиться.</div>
-                <div className="placeholder">Перетащите элементы сюда — Ваше портфолио появится здесь</div>
-              </div>
-            ) : (
-              <div className="dropped-blocks-container">
-                {droppedBlocks.map((block, idx) => (
-                  <div 
-                  key={`${block.type}-${idx}`} 
-                  className="dropped-card-wrapper fade-in"
-                  draggable // Обязательно делаем блок перетаскиваемым
-                  onDragStart={() => handleSortStart(idx)}
-                  onDragOver={(e) => handleSortOver(e, idx)}
-                  onDragEnd={handleSortEnd}
+        <div className="editor-main" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+          <aside className="sidebar">
+            <h2>Элементы конструктора</h2>
+            <p className="hint">Перетащите блоки для создания портфолио</p>
+            <div className="blocks-list">
+              {EDITOR_BLOCK_CATALOG.map((block, idx) => (
+                <div
+                  key={idx}
+                  className={`sidebar-item sidebar-item-${block.type} block-card draggable`}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, block)}
+                  onDrag={handleDrag}
+                  onDragEnd={handleDragEnd}
                 >
-                    <div
-                      className={`dropped-card
-                        ${block.type === 'nav' ? 'nav-card-full' : ''}
-                        ${block.type === 'main' ? 'main-card-full' : ''}
-                        ${block.type === 'about' ? 'about-card-full' : ''}
-                        ${block.type === 'projects' ? 'projects-card-full' : ''}
-                        ${block.type === 'skills' ? 'skills-card-full' : ''}
-                        ${block.type === 'experience' ? 'experience-card-full' : ''}
-                        ${block.type === 'reviews' ? 'reviews-card-full' : ''}
-                        ${block.type === 'footer' ? 'footer-card-full' : ''}
-                        ${block.type === 'github' ? 'github-card-full' : ''}
-                        ${block.type === 'custom' ? 'custom-card-full' : ''}`}
-                      style={!['nav', 'main', 'about', 'projects', 'skills', 'experience', 'reviews', 'footer', 'github', 'custom'].includes(block.type) ? { backgroundColor: block.bg } : {}}
+                  {renderBlockContent(block, false)}
+                </div>
+              ))}
+            </div>
+            
+            {/* Кнопка ИИ внизу левой панели */}
+            <div className="sidebar-footer-action">
+              <button className="sidebar-ai-btn" onClick={() => setIsAiSidebarOpen(true)}>
+                Проверить с помощью ИИ 
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: '8px'}}>
+                  <path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z"></path>
+                  <path d="M5 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"></path>
+                </svg>
+              </button>
+            </div>
+          </aside>
+
+          <main className="canvas" onDrop={handleDrop} onDragOver={handleDragOver}>
+            <div className="visibility-toggle-container">
+              <span className="visibility-toggle-label">
+                Публичный доступ
+              </span>
+              <label className="visibility-switch">
+                <input 
+                  type="checkbox" 
+                  checked={isPublic} 
+                  onChange={(e) => setIsPublic(e.target.checked)} 
+                />
+                <span className="visibility-slider"></span>
+              </label>
+            </div>
+
+            {isLoadingDraft ? (
+              <div className='loading-draft'>Загрузка вашего замечательного портфолио...</div>
+            ) : (
+              droppedBlocks.length === 0 ? (
+                <div className="empty-state">
+                  <h3>Начните создавать свое портфолио</h3>
+                  <p>Перетащите компоненты из левой боковой панели, чтобы создать идеальное портфолио разработчика.</p>
+                  <div className="tip">Совет: Начните с Главного блока, чтобы представиться.</div>
+                  <div className="placeholder">Перетащите элементы сюда — Ваше портфолио появится здесь</div>
+                </div>
+              ) : (
+                <div className="dropped-blocks-container">
+                  {droppedBlocks.map((block, idx) => (
+                    <div 
+                      key={`${block.type}-${idx}`} 
+                      className="dropped-card-wrapper fade-in"
+                      draggable 
+                      onDragStart={() => handleSortStart(idx)}
+                      onDragOver={(e) => handleSortOver(e, idx)}
+                      onDragEnd={handleSortEnd}
                     >
-                      <div className="block-label-badge">{block.name}</div>
-                      {renderBlockContent(block, true, idx)}
-                      <button className="remove-block-btn" onClick={() => removeBlock(block.type)} title="Удалить блок">✕</button>
+                      <div
+                        className={`dropped-card
+                          ${block.type === 'nav' ? 'nav-card-full' : ''}
+                          ${block.type === 'main' ? 'main-card-full' : ''}
+                          ${block.type === 'about' ? 'about-card-full' : ''}
+                          ${block.type === 'projects' ? 'projects-card-full' : ''}
+                          ${block.type === 'skills' ? 'skills-card-full' : ''}
+                          ${block.type === 'experience' ? 'experience-card-full' : ''}
+                          ${block.type === 'reviews' ? 'reviews-card-full' : ''}
+                          ${block.type === 'footer' ? 'footer-card-full' : ''}
+                          ${block.type === 'github' ? 'github-card-full' : ''}
+                          ${block.type === 'custom' ? 'custom-card-full' : ''}`}
+                        style={!['nav', 'main', 'about', 'projects', 'skills', 'experience', 'reviews', 'footer', 'github', 'custom'].includes(block.type) ? { backgroundColor: block.bg } : {}}
+                      >
+                        <div className="block-label-badge">{block.name}</div>
+                        {renderBlockContent(block, true, idx)}
+                        <button className="remove-block-btn" onClick={() => removeBlock(block.type)} title="Удалить блок">✕</button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )
-          )}
-        </main>
+                  ))}
+                </div>
+              )
+            )}
+          </main>
+        </div>
       </div>
 
-      <SaveSuccessModal isOpen={isModalOpen} publicUrl={currentUrl} onClose={() => setIsModalOpen(false)} />
+      {/* Правая панель ИИ (теперь она часть общей сетки и сдвигает центральную часть) */}
+      <AiAssistantSidebar 
+        isOpen={isAiSidebarOpen} 
+        onClose={() => setIsAiSidebarOpen(false)}
+        blocks={droppedBlocks}
+      />
 
+      {/* Модалки и курсоры */}
+      <SaveSuccessModal isOpen={isModalOpen} publicUrl={currentUrl} onClose={() => setIsModalOpen(false)} />
+      
       {isDragging && draggedBlock && (
         <div 
           className={`drag-cursor-block sidebar-item-${draggedBlock.type}`}
           style={{ 
-            left: dragPosition.x, 
-            top: dragPosition.y,
-            position: 'fixed',
-            pointerEvents: 'none',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 1000
+            left: dragPosition.x, top: dragPosition.y, position: 'fixed', pointerEvents: 'none', transform: 'translate(-50%, -50%)', zIndex: 1000
           }}
         >
           {renderBlockContent(draggedBlock, false)}
