@@ -24,7 +24,14 @@ export const AiAssistantSidebar: React.FC<AiAssistantSidebarProps> = ({ isOpen, 
           // Отправляем текущие блоки портфолио на бэкенд
           const result = await getAiRecommendations(blocks);
                   
-          setAiResponse(result.data || result.message || result.recommendations || 'Ответ от ИИ пуст.');
+          const review = result.data;
+          if (review && review.overallScore !== undefined) {
+            setAiResponse(JSON.stringify(review)); // временно, пока не готова вёрстка
+            // или сохранить в состояние для структурированного рендера:
+            // setStructuredReview(review);
+          } else {
+            setAiResponse(result.message || result.recommendations || 'Ответ от ИИ пуст.');
+          }
         } catch (err: any) {
           setError(err.message || 'Не удалось получить рекомендации от ИИ.');
         } finally {
