@@ -17,7 +17,7 @@
 }
 
 .ai-sidebar-title {
-  font-size: 15px
+  font-size: 15px;
   font-weight: 700;
   color: #111827;
   margin: 0;
@@ -120,36 +120,323 @@
 .ai-sidebar-content-wrapper {
   flex: 1;
   padding: 0 20px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.ai-sidebar-content {
-  flex: 1;
-  background-color: #F5F3FF;
-  border: 1px solid #6366F1;
-  border-radius: 12px;
-  padding: 16px;
-  overflow-y: auto;
-  color: #1F2937;
-  font-size: 13px;
-  line-height: 1.5;
+/* === СТРУКТУРИРОВАННЫЙ КОНТЕНТ === */
+.ai-review-section {
+  margin-bottom: 20px;
 }
 
-.ai-sidebar-content::-webkit-scrollbar { width: 6px; }
-.ai-sidebar-content::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
-.ai-sidebar-content::-webkit-scrollbar-thumb { background-color: #6366F1; border-radius: 4px; }
-
-.ai-content-title {
+.section-title {
   font-size: 14px;
   font-weight: 700;
+  color: #111827;
   margin: 0 0 12px 0;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.ai-sidebar-content ul { padding-left: 20px; margin: 12px 0; }
-.ai-sidebar-content li { margin-bottom: 4px; }
+.section-icon {
+  color: #DC2626;
+}
+
+/* === ОБЩАЯ ОЦЕНКА === */
+.overall-score-card {
+  background: linear-gradient(135deg, #6366F1 0%, #7C3AED 100%);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  margin-bottom: 16px;
+}
+
+.score-circle {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.score-value {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.score-max {
+  font-size: 18px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.score-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.95;
+}
+
+/* === ПОХВАЛА И ЗОНЫ РОСТА === */
+.feedback-block {
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-left: 4px solid;
+}
+
+.strengths-block {
+  background-color: #F0FDF4;
+  border-left-color: #10B981;
+}
+
+.growth-block {
+  background-color: #FEF3C7;
+  border-left-color: #F59E0B;
+}
+
+.feedback-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.feedback-icon {
+  flex-shrink: 0;
+}
+
+.strengths-block .feedback-icon {
+  color: #10B981;
+}
+
+.growth-block .feedback-icon {
+  color: #F59E0B;
+}
+
+.feedback-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feedback-item {
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 6px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.feedback-item:last-child {
+  margin-bottom: 0;
+}
+
+.feedback-item::before {
+  content: "•";
+  position: absolute;
+  left: 6px;
+  font-weight: bold;
+}
+
+.strengths-block .feedback-item::before {
+  color: #10B981;
+}
+
+.growth-block .feedback-item::before {
+  color: #F59E0B;
+}
+
+/* === БЫСТРЫЙ РЕЗУЛЬТАТ === */
+.quick-win-card {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FED7AA 100%);
+  border-radius: 10px;
+  padding: 12px;
+  border: 2px solid #F59E0B;
+  margin-top: 12px;
+}
+
+.quick-win-label {
+  margin: 0 0 6px 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #92400E;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quick-win-text {
+  margin: 0;
+  font-size: 13px;
+  color: #78350F;
+  line-height: 1.4;
+}
+
+/* === КРИТЕРИИ ОЦЕНКИ === */
+.criteria-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.criterion-card {
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 12px;
+  border-left: 3px solid #6366F1;
+}
+
+.criterion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.criterion-name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  flex: 1;
+}
+
+.criterion-score-badge {
+  background-color: #6366F1;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.criterion-comment {
+  margin: 0;
+  font-size: 12px;
+  color: #6B7280;
+  line-height: 1.4;
+}
+
+/* === АНАЛИЗ ПРОЕКТОВ === */
+.projects-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.project-card {
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 12px;
+  border-left: 3px solid #8B5CF6;
+}
+
+.project-name {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.project-verdict {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.project-detail {
+  margin: 6px 0;
+  font-size: 12px;
+  color: #6B7280;
+  padding-left: 8px;
+  border-left: 2px solid #D1D5DB;
+  line-height: 1.3;
+}
+
+/* === НАРУШЕНИЯ BLACKLIST === */
+.warning-section {
+  background-color: #FEF2F2;
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid #FCA5A5;
+}
+
+.warning-section .section-title {
+  color: #991B1B;
+  margin-bottom: 10px;
+}
+
+.violations-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.violation-item {
+  font-size: 12px;
+  color: #7F1D1D;
+  margin-bottom: 6px;
+  padding-left: 20px;
+  position: relative;
+  line-height: 1.4;
+}
+
+.violation-item:last-child {
+  margin-bottom: 0;
+}
+
+.violation-item::before {
+  content: "⚠";
+  position: absolute;
+  left: 2px;
+  font-size: 14px;
+}
+
+/* === СКРОЛЛБАР === */
+.ai-sidebar-content-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ai-sidebar-content-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+.ai-sidebar-content-wrapper::-webkit-scrollbar-thumb {
+  background-color: #D1D5DB;
+  border-radius: 4px;
+}
+
+.ai-sidebar-content-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #9CA3AF;
+}
+
+/* === АДАПТИВ === */
+@media (max-width: 640px) {
+  .ai-sidebar {
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+  }
+}
+
+/* === СТАРЫЕ СТИЛИ (оставляю для совместимости) === */
 
 .ai-sidebar-footer {
   padding: 20px;

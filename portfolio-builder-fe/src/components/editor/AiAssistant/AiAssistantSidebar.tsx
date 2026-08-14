@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './AiAssistantSidebar.css';
 import { getAiRecommendations } from '../../../api/api';
+import { AiReviewResponse, getCriterionLabel } from '../../../types/aiReview';
 
 interface AiAssistantSidebarProps {
   isOpen: boolean;
@@ -10,14 +11,14 @@ interface AiAssistantSidebarProps {
 
 export const AiAssistantSidebar: React.FC<AiAssistantSidebarProps> = ({ isOpen, onClose, blocks }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(true);
-  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [structuredReview, setStructuredReview] = useState<AiReviewResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setIsAnalyzing(true);
       setError(null);
-      setAiResponse(null);
+      setStructuredReview(null);
 
       const fetchAiData = async () => {
         try {
@@ -26,11 +27,11 @@ export const AiAssistantSidebar: React.FC<AiAssistantSidebarProps> = ({ isOpen, 
                   
           const review = result.data;
           if (review && review.overallScore !== undefined) {
-            setAiResponse(JSON.stringify(review)); // временно, пока не готова вёрстка
-            // или сохранить в состояние для структурированного рендера:
-            // setStructuredReview(review);
+            // Парсим JSON если это строка
+            const parsedReview: AiReviewResponse = typeof review === 'string' ? JSON.parse(review) : review;
+            setStructuredReview(parsedReview);
           } else {
-            setAiResponse(result.message || result.recommendations || 'Ответ от ИИ пуст.');
+            setError('Ответ от ИИ пуст или неверного формата');
           }
         } catch (err: any) {
           setError(err.message || 'Не удалось получить рекомендации от ИИ.');
@@ -75,7 +76,7 @@ export const AiAssistantSidebar: React.FC<AiAssistantSidebarProps> = ({ isOpen, 
           <h4 className="ai-hero-title" style={{ color: '#DC2626' }}>Ошибка</h4>
           <p className="ai-hero-subtitle" style={{ padding: '0 20px' }}>{error}</p>
         </div>
-      ) : (
+      ) : structuredReview ? (
         <>
           <div className="ai-sidebar-hero">
             <div className="ai-icon-circle">
@@ -91,9 +92,126 @@ export const AiAssistantSidebar: React.FC<AiAssistantSidebarProps> = ({ isOpen, 
           </div>
 
           <div className="ai-sidebar-content-wrapper">
-            <div className="ai-sidebar-content" style={{ whiteSpace: 'pre-wrap' }}> 
-              {aiResponse}
+            {/* === ОБЩАЯ ОЦЕНКА === */}
+            <div className="ai-review-section">
+              <div className="overall-score-card">
+                <div className="score-circle">
+                  <span className="score-value">{structuredReview.overallScore}</span>
+                  <span className="score-max">/100</span>
+                </div>
+                <p className="score-label">Общая оценка портфолио</p>
+              </div>
             </div>
+
+            {/* === ПОХВАЛА И ЗОНЫ РОСТА === */}
+            {structuredReview.sandwichFeedback && (
+              <div className="ai-review-section">
+                <h4 className="section-title">Анализ портфолио</h4>
+                
+                {/* Сильные стороны */}
+                {structuredReview.sandwichFeedback.strengths && structuredReview.sandwichFeedback.strengths.length > 0 && (
+                  <div className="feedback-block strengths-block">
+                    <h5 className="feedback-title">
+                      <svg className="feedback-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      Сильные стороны
+                    </h5>
+                    <ul className="feedback-list">
+                      {structuredReview.sandwichFeedback.strengths.map((strength, idx) => (
+                        <li key={idx} className="feedback-item">{strength}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Зоны роста */}
+                {structuredReview.sandwichFeedback.growthAreas && structuredReview.sandwichFeedback.growthAreas.length > 0 && (
+                  <div className="feedback-block growth-block">
+                    <h5 className="feedback-title">
+                      <svg className="feedback-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                      </svg>
+                      Зоны для развития
+                    </h5>
+                    <ul className="feedback-list">
+                      {structuredReview.sandwichFeedback.growthAreas.map((area, idx) => (
+                        <li key={idx} className="feedback-item">{area}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Быстрый результат */}
+                {structuredReview.sandwichFeedback.quickWin && (
+                  <div className="quick-win-card">
+                    <p className="quick-win-label">💡 Быстрое улучшение</p>
+                    <p className="quick-win-text">{structuredReview.sandwichFeedback.quickWin}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* === ДЕТАЛЬНАЯ ОЦЕНКА ПО КРИТЕРИЯМ === */}
+            {structuredReview.criteriaScores && Object.keys(structuredReview.criteriaScores).length > 0 && (
+              <div className="ai-review-section">
+                <h4 className="section-title">Критерии оценки</h4>
+                <div className="criteria-grid">
+                  {Object.entries(structuredReview.criteriaScores).map(([key, criterion]) => {
+                    if (!criterion || !criterion.score) return null;
+                    return (
+                      <div key={key} className="criterion-card">
+                        <div className="criterion-header">
+                          <p className="criterion-name">{getCriterionLabel(key)}</p>
+                          <div className="criterion-score-badge">{criterion.score}</div>
+                        </div>
+                        <p className="criterion-comment">{criterion.comment}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* === РАЗБОР ПРОЕКТОВ === */}
+            {structuredReview.projectReviews && structuredReview.projectReviews.length > 0 && (
+              <div className="ai-review-section">
+                <h4 className="section-title">Анализ проектов</h4>
+                <div className="projects-list">
+                  {structuredReview.projectReviews.map((project, idx) => (
+                    <div key={idx} className="project-card">
+                      <h5 className="project-name">{project.projectName}</h5>
+                      <p className="project-verdict">{project.verdict}</p>
+                      {project.missingMetrics && (
+                        <p className="project-detail"><strong>Отсутствующие метрики:</strong> {project.missingMetrics}</p>
+                      )}
+                      {project.suggestedTemplate && (
+                        <p className="project-detail"><strong>Рекомендуемый шаблон:</strong> {project.suggestedTemplate}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* === НАРУШЕНИЯ BLACKLIST === */}
+            {structuredReview.blacklistViolations && structuredReview.blacklistViolations.length > 0 && (
+              <div className="ai-review-section warning-section">
+                <h4 className="section-title">
+                  <svg className="section-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3.05h16.94a2 2 0 001.71-3.05L13.71 3.86a2 2 0 00-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                  Найденные замечания
+                </h4>
+                <ul className="violations-list">
+                  {structuredReview.blacklistViolations.map((violation, idx) => (
+                    <li key={idx} className="violation-item">{violation}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <div className="ai-sidebar-footer">
@@ -105,7 +223,7 @@ export const AiAssistantSidebar: React.FC<AiAssistantSidebarProps> = ({ isOpen, 
             </button>
           </div>
         </>
-      )}
+      ) : null}
     </div>
   );
 };
